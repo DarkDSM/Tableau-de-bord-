@@ -1,0 +1,3555 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Application de Gestion Immobilière</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --success: #2ecc71;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --light: #ecf0f1;
+            --dark: #34495e;
+            --purchase-color: #9b59b6;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        /* Menu Hamburger */
+        .hamburger-menu {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+        }
+        
+        .hamburger-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .hamburger-btn:hover {
+            background: var(--secondary);
+            transform: scale(1.05);
+        }
+        
+        .menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 999;
+            display: none;
+        }
+        
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -300px;
+            width: 300px;
+            height: 100%;
+            background: white;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            transition: left 0.3s ease;
+            overflow-y: auto;
+            padding-top: 20px;
+        }
+        
+        .sidebar.active {
+            left: 0;
+        }
+        
+        .sidebar-header {
+            padding: 20px;
+            text-align: center;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            margin-bottom: 20px;
+        }
+        
+        .sidebar-header h2 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+        
+        .menu-items {
+            list-style: none;
+        }
+        
+        .menu-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+        }
+        
+        .menu-item:hover {
+            background: var(--light);
+            padding-left: 30px;
+        }
+        
+        .menu-item.active {
+            background: var(--secondary);
+            color: white;
+        }
+        
+        .menu-item i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+        
+        /* Contenu principal */
+        .main-content {
+            padding: 20px;
+            margin-left: 0;
+            transition: margin-left 0.3s ease;
+        }
+        
+        .main-content.shifted {
+            margin-left: 300px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .agency-logo {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+        
+        /* Styles communs pour toutes les sections */
+        .section {
+            display: none;
+        }
+        
+        .section.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .tabs {
+            display: flex;
+            margin-bottom: 30px;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+            flex-wrap: wrap;
+        }
+        
+        .tab {
+            padding: 18px 25px;
+            cursor: pointer;
+            flex: 1;
+            text-align: center;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            min-width: 200px;
+        }
+        
+        .tab.active {
+            background: linear-gradient(135deg, var(--secondary), #2980b9);
+            color: white;
+        }
+        
+        .tab:hover:not(.active) {
+            background-color: var(--light);
+        }
+        
+        .tab-content {
+            display: none;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 25px;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: var(--dark);
+            font-size: 1.1rem;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        input:focus, select:focus {
+            border-color: var(--secondary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        button {
+            background: linear-gradient(135deg, var(--secondary), #2980b9);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 25px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        th, td {
+            padding: 15px 20px;
+            text-align: left;
+            border-bottom: 1px solid #e1e8ed;
+        }
+        
+        th {
+            background: linear-gradient(135deg, var(--primary), #34495e);
+            color: white;
+            font-weight: bold;
+        }
+        
+        tr:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .summary-box {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 25px;
+            border-left: 5px solid var(--secondary);
+        }
+        
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #dee2e6;
+            font-size: 1.1rem;
+        }
+        
+        .summary-item.total {
+            font-weight: bold;
+            font-size: 1.3rem;
+            color: var(--primary);
+            border-bottom: none;
+            margin-top: 10px;
+            padding-top: 15px;
+            border-top: 2px solid var(--secondary);
+        }
+        
+        .calculator {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        
+        .calculator-result {
+            background: linear-gradient(135deg, var(--success), #27ae60);
+            color: white;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 5px 20px rgba(46, 204, 113, 0.3);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger), #c0392b);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, var(--success), #27ae60);
+        }
+        
+        .btn-warning {
+            background: linear-gradient(135deg, var(--warning), #e67e22);
+        }
+        
+        .commission-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .commission-option {
+            padding: 20px;
+            text-align: center;
+            background: var(--light);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+            border: 2px solid transparent;
+        }
+        
+        .commission-option:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .commission-option.selected {
+            background: linear-gradient(135deg, var(--secondary), #2980b9);
+            color: white;
+            border-color: var(--secondary);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+        }
+        
+        .money {
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+        }
+        
+        .positive {
+            color: var(--success);
+        }
+        
+        .negative {
+            color: var(--danger);
+        }
+        
+        .grade-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: white;
+        }
+        
+        .grade-patron { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+        .grade-copatron { background: linear-gradient(135deg, #e67e22, #d35400); }
+        .grade-manager { background: linear-gradient(135deg, #f39c12, #e67e22); }
+        .grade-employe { background: linear-gradient(135deg, #3498db, #2980b9); }
+        .grade-stagiaire { background: linear-gradient(135deg, #9b59b6, #8e44ad); }
+        
+        .chart-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 25px;
+            height: 400px;
+        }
+        
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .week-selector {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+        
+        .week-selector select {
+            flex: 1;
+        }
+        
+        .current-week-info {
+            background: linear-gradient(135deg, var(--warning), #e67e22);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr auto;
+            gap: 15px;
+            align-items: end;
+            margin-bottom: 15px;
+        }
+        
+        .expense-form-row {
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr auto;
+            gap: 15px;
+            align-items: end;
+            margin-bottom: 15px;
+        }
+        
+        .partnership-form-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 2fr 1fr 1fr auto;
+            gap: 15px;
+            align-items: end;
+            margin-bottom: 15px;
+        }
+        
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: white;
+        }
+        
+        .status-actif { background: linear-gradient(135deg, var(--success), #27ae60); }
+        .status-negociation { background: linear-gradient(135deg, var(--warning), #e67e22); }
+        .status-termine { background: linear-gradient(135deg, #95a5a6, #7f8c8d); }
+        .status-suspendu { background: linear-gradient(135deg, var(--danger), #c0392b); }
+        .status-revision { background: linear-gradient(135deg, #9b59b6, #8e44ad); }
+        
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .action-buttons button {
+            padding: 8px 12px;
+            font-size: 0.9rem;
+        }
+        
+        /* Styles spécifiques pour la grille des salaires */
+        .salary-table {
+            width: 100%;
+            border-collapse: collapse;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            border-radius: 10px;
+            overflow: hidden;
+            background-color: white;
+        }
+        
+        .salary-table thead {
+            background: linear-gradient(135deg, var(--secondary), var(--primary));
+            color: white;
+        }
+        
+        .salary-table th {
+            padding: 18px 15px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        
+        .salary-table tbody tr {
+            border-bottom: 1px solid #eaeaea;
+            transition: all 0.3s ease;
+        }
+        
+        .salary-table tbody tr:hover {
+            background-color: #f5f9ff;
+            transform: translateY(-2px);
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
+        }
+        
+        .salary-table td {
+            padding: 16px 15px;
+            vertical-align: top;
+        }
+        
+        .salary-table tbody tr:nth-child(odd) {
+            background-color: #f8fafc;
+        }
+        
+        .salary-table tbody tr:nth-child(even) {
+            background-color: #ffffff;
+        }
+        
+        .grade-cell {
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        .salary-cell {
+            font-weight: 600;
+            color: var(--success);
+        }
+        
+        .commission-cell {
+            font-weight: 600;
+            color: var(--danger);
+        }
+        
+        .responsibilities {
+            max-width: 300px;
+        }
+        
+        /* Styles pour les détails de location et achat */
+        .image-container {
+            width: 100%;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .image-container img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+        }
+        
+        .image-link {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 10px 20px;
+            background-color: var(--secondary);
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: 600;
+            transition: background-color 0.3s;
+        }
+        
+        .image-link:hover {
+            background-color: #2980b9;
+        }
+        
+        .form-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .tax-section {
+            background-color: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+        }
+        
+        .tax-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .tax-input {
+            display: flex;
+            align-items: center;
+        }
+        
+        .tax-input input {
+            flex: 1;
+            margin-right: 10px;
+        }
+        
+        .tax-input span {
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        .results-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .results-section {
+            background-color: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+        
+        .results-section.rental {
+            border-top: 5px solid var(--secondary);
+        }
+        
+        .results-section.purchase {
+            border-top: 5px solid var(--purchase-color);
+        }
+        
+        .results-section h2 {
+            color: var(--primary);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--light);
+        }
+        
+        .results-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .result-card {
+            background-color: var(--light);
+            padding: 15px;
+            border-radius: 8px;
+            transition: transform 0.3s;
+        }
+        
+        .result-card:hover {
+            transform: translateY(-3px);
+        }
+        
+        .result-card h3 {
+            color: var(--primary);
+            margin-bottom: 10px;
+            font-size: 1rem;
+        }
+        
+        .result-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--secondary);
+        }
+        
+        .purchase .result-value {
+            color: var(--purchase-color);
+        }
+        
+        .weight-card {
+            background-color: #e8f4fc;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .weight-card h3 {
+            color: var(--primary);
+            margin-bottom: 10px;
+            font-size: 1rem;
+        }
+        
+        .weight-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--danger);
+        }
+        
+        .total-card {
+            background-color: var(--primary);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            margin-top: 15px;
+        }
+        
+        .total-card h3 {
+            color: white;
+            margin-bottom: 10px;
+        }
+        
+        .total-value {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+        
+        .info-text {
+            font-style: italic;
+            margin-top: 10px;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+        
+        /* Styles pour la gestion des baux */
+        .dashboard {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .card h2 {
+            color: var(--primary);
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .card h2 i {
+            color: var(--secondary);
+        }
+        
+        .employee-tabs {
+            display: flex;
+            background: white;
+            border-radius: 12px 12px 0 0;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+        
+        .employee-tab {
+            flex: 1;
+            padding: 16px;
+            text-align: center;
+            background: var(--light);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+            font-weight: 500;
+        }
+        
+        .employee-tab:hover {
+            background: #e9ecef;
+        }
+        
+        .employee-tab.active {
+            background: white;
+            border-bottom: 3px solid var(--secondary);
+            font-weight: bold;
+            color: var(--secondary);
+        }
+        
+        .employee-tab-content {
+            display: none;
+            background: white;
+            padding: 30px;
+            border-radius: 0 0 12px 12px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+        }
+        
+        .employee-tab-content.active {
+            display: block;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .checkbox-group input {
+            width: auto;
+        }
+        
+        .checkbox-group label {
+            margin-bottom: 0;
+            font-weight: normal;
+        }
+        
+        .checkbox-group.important {
+            background: #fff9e6;
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 4px solid var(--warning);
+        }
+        
+        .checkbox-group.validated {
+            background: #e8f6ef;
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 4px solid var(--success);
+        }
+        
+        .percentage-input {
+            position: relative;
+        }
+        
+        .percentage-input input {
+            padding-right: 40px;
+        }
+        
+        .percentage-symbol {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--dark);
+            font-weight: bold;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        .badge.success {
+            background: var(--success);
+            color: white;
+        }
+        
+        .badge.warning {
+            background: var(--warning);
+            color: white;
+        }
+        
+        .badge.danger {
+            background: var(--danger);
+            color: white;
+        }
+        
+        .history-section {
+            margin-top: 30px;
+        }
+        
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        
+        .history-table th,
+        .history-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .history-table th {
+            background: var(--light);
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        .history-table tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .empty-history {
+            text-align: center;
+            padding: 30px;
+            color: var(--dark);
+            font-style: italic;
+        }
+        
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 0.8rem;
+        }
+        
+        .instructions {
+            background: #e8f4fc;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 25px;
+            border-left: 4px solid var(--secondary);
+        }
+        
+        .instructions h3 {
+            color: var(--primary);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .instructions ul {
+            padding-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+        
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .tax-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .results-container {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .main-content.shifted {
+                margin-left: 0;
+            }
+            
+            .sidebar {
+                width: 250px;
+            }
+            
+            .calculator {
+                grid-template-columns: 1fr;
+            }
+            
+            .commission-options {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .expense-form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .partnership-form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .employee-tabs {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Menu Hamburger -->
+    <div class="hamburger-menu">
+        <button class="hamburger-btn">
+            <i class="fas fa-bars"></i>
+        </button>
+    </div>
+    
+    <div class="menu-overlay"></div>
+    
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>Gestion Immobilière</h2>
+            <p>Menu Principal</p>
+        </div>
+        <ul class="menu-items">
+            <li class="menu-item active" data-section="gestion-salaire">
+                <i class="fas fa-money-bill-wave"></i> Gestion des Salaires
+            </li>
+            <li class="menu-item" data-section="gestion-baux">
+                <i class="fas fa-file-contract"></i> Gestion des Baux
+            </li>
+            <li class="menu-item" data-section="details-location">
+                <i class="fas fa-home"></i> Détails Location/Achat
+            </li>
+            <li class="menu-item" data-section="grille-salaires">
+                <i class="fas fa-table"></i> Grille des Salaires
+            </li>
+        </ul>
+    </div>
+    
+    <!-- Contenu principal -->
+    <div class="main-content">
+        <div class="container">
+            <header>
+                <div class="agency-logo">🏢</div>
+                <h1>Agence Immobilière - Tableau de Gestion</h1>
+                <p>Gérez vos employés, calculez les commissions et les bénéfices pour GTA RP</p>
+            </header>
+            
+            <!-- Section Gestion des Salaires -->
+            <section id="gestion-salaire" class="section active">
+                <!-- Contenu de la gestion des salaires -->
+                <div class="current-week-info" id="currentWeekInfo">
+                    <!-- Affiché dynamiquement -->
+                </div>
+                
+                <div class="tabs">
+                    <div class="tab active" data-tab="employees">Employés</div>
+                    <div class="tab" data-tab="commission">Commissions</div>
+                    <div class="tab" data-tab="expenses">Dépenses & Impôts</div>
+                    <div class="tab" data-tab="summary">Résumé Hebdo</div>
+                    <div class="tab" data-tab="partnerships">Partenariats</div>
+                    <div class="tab" data-tab="history">Historique & Graphiques</div>
+                </div>
+                
+                <!-- Onglet Gestion Employés -->
+                <div id="employees" class="tab-content active">
+                    <h2>Saisie des Performances Hebdomadaires</h2>
+                    
+                    <div class="form-group">
+                        <label for="weekDate">Semaine du</label>
+                        <input type="date" id="weekDate">
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="employeeName">Nom de l'employé</label>
+                            <input type="text" id="employeeName" placeholder="Nom de l'employé">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="employeeGrade">Grade</label>
+                            <select id="employeeGrade">
+                                <option value="patron">Patron</option>
+                                <option value="copatron">Co-Patron</option>
+                                <option value="manager">Manager</option>
+                                <option value="employe">Employé</option>
+                                <option value="stagiaire">Stagiaire</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="weeklyRevenue">CA Hebdomadaire ($)</label>
+                            <input type="number" id="weeklyRevenue" placeholder="CA de la semaine">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>&nbsp;</label>
+                            <button id="addEmployee">Ajouter</button>
+                        </div>
+                    </div>
+                    
+                    <table id="employeesTable">
+                        <thead>
+                            <tr>
+                                <th>Semaine</th>
+                                <th>Nom</th>
+                                <th>Grade</th>
+                                <th>CA Hebdomadaire</th>
+                                <th>Salaire</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Les lignes seront ajoutées dynamiquement -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Onglet Calculateur de Commission -->
+                <div id="commission" class="tab-content">
+                    <h2>Calculateur de Commission</h2>
+                    <div class="calculator">
+                        <div>
+                            <div class="form-group">
+                                <label for="propertyValue">Valeur du bien ($)</label>
+                                <input type="number" id="propertyValue" placeholder="Entrez la valeur du bien">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Sélectionnez le pourcentage de commission</label>
+                                <div class="commission-options">
+                                    <div class="commission-option" data-percent="8">8%</div>
+                                    <div class="commission-option" data-percent="15">15%</div>
+                                    <div class="commission-option" data-percent="18">18%</div>
+                                    <div class="commission-option" data-percent="20">20%</div>
+                                    <div class="commission-option" data-percent="25">25%</div>
+                                    <div class="commission-option" data-percent="custom">Personnalisé</div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group" id="customPercentContainer" style="display: none;">
+                                <label for="customPercent">Pourcentage personnalisé</label>
+                                <input type="number" id="customPercent" placeholder="Entrez le pourcentage">
+                            </div>
+                            
+                            <button id="calculateCommission">Calculer la Commission</button>
+                        </div>
+                        
+                        <div class="calculator-result" id="commissionResult">
+                            Commission: $0
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Onglet Dépenses & Impôts -->
+                <div id="expenses" class="tab-content">
+                    <h2>Dépenses & Impôts</h2>
+                    
+                    <div class="form-group">
+                        <label for="taxRate">Taux d'imposition (%)</label>
+                        <input type="number" id="taxRate" value="10" placeholder="Entrez le taux d'imposition">
+                    </div>
+                    
+                    <h3>Ajouter une Dépense d'Agence</h3>
+                    
+                    <div class="expense-form-row">
+                        <div class="form-group">
+                            <label for="expenseDate">Date</label>
+                            <input type="date" id="expenseDate">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="expenseCompany">Nom de l'entreprise / Sujet</label>
+                            <input type="text" id="expenseCompany" placeholder="Nom de l'entreprise ou sujet">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="expenseCost">Coût ($)</label>
+                            <input type="number" id="expenseCost" placeholder="Coût de la dépense">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>&nbsp;</label>
+                            <button id="addExpense">Ajouter</button>
+                        </div>
+                    </div>
+                    
+                    <table id="expensesTable">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Entreprise / Sujet</th>
+                                <th>Coût</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Les lignes seront ajoutées dynamiquement -->
+                        </tbody>
+                    </table>
+                    
+                    <button id="updateExpenses">Mettre à jour</button>
+                    
+                    <div class="summary-box">
+                        <h3>Résumé des Dépenses - Semaine en cours</h3>
+                        <div class="summary-item">
+                            <span>CA Total Brut:</span>
+                            <span id="grossRevenue" class="money">$0</span>
+                        </div>
+                        <div class="summary-item">
+                            <span>Impôts:</span>
+                            <span id="taxAmount" class="money negative">$0</span>
+                        </div>
+                        <div class="summary-item">
+                            <span>Dépenses:</span>
+                            <span id="totalExpenses" class="money negative">$0</span>
+                        </div>
+                        <div class="summary-item">
+                            <span>Salaires:</span>
+                            <span id="totalSalaries" class="money negative">$0</span>
+                        </div>
+                        <div class="summary-item total">
+                            <span>Bénéfice Net:</span>
+                            <span id="netProfit" class="money positive">$0</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Onglet Résumé Hebdomadaire -->
+                <div id="summary" class="tab-content">
+                    <h2>Résumé Hebdomadaire</h2>
+                    
+                    <div class="form-group">
+                        <label for="summaryWeekSelector">Sélectionner la semaine à analyser</label>
+                        <select id="summaryWeekSelector">
+                            <option value="current">Semaine en cours</option>
+                        </select>
+                    </div>
+                    
+                    <div class="summary-box">
+                        <h3>Résumé Financier - <span id="summaryWeekTitle">Semaine en cours</span></h3>
+                        <div class="summary-item">
+                            <span>CA Total Brut:</span>
+                            <span id="summaryGrossRevenue" class="money">$0</span>
+                        </div>
+                        <div class="summary-item">
+                            <span>Impôts:</span>
+                            <span id="summaryTaxAmount" class="money negative">$0</span>
+                        </div>
+                        <div class="summary-item">
+                            <span>Dépenses:</span>
+                            <span id="summaryExpenses" class="money negative">$0</span>
+                        </div>
+                        <div class="summary-item">
+                            <span>Salaires:</span>
+                            <span id="summarySalaries" class="money negative">$0</span>
+                        </div>
+                        <div class="summary-item total">
+                            <span>Bénéfice Net:</span>
+                            <span id="summaryNetProfit" class="money positive">$0</span>
+                        </div>
+                    </div>
+                    
+                    <div class="summary-box">
+                        <h3>Réserve Dynasty</h3>
+                        <div class="summary-item">
+                            <span>Montant à conserver:</span>
+                            <span class="money">$100,000</span>
+                        </div>
+                        <div class="summary-item">
+                            <span>Bénéfice après réserve:</span>
+                            <span id="profitAfterReserve" class="money">$0</span>
+                        </div>
+                        <div class="summary-item total">
+                            <span>Montant disponible pour primes:</span>
+                            <span id="bonusAmount" class="money positive">$0</span>
+                        </div>
+                    </div>
+                    
+                    <button id="distributeBonuses">Distribuer les Primes</button>
+                </div>
+                
+                <!-- Nouvel Onglet Partenariats -->
+                <div id="partnerships" class="tab-content">
+                    <h2>Gestion des Partenariats</h2>
+                    
+                    <div class="partnership-form-row">
+                        <div class="form-group">
+                            <label for="partnerName">Nom de l'entreprise</label>
+                            <input type="text" id="partnerName" placeholder="Nom de l'entreprise">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="contractType">Type de contrat</label>
+                            <select id="contractType">
+                                <option value="partenariat">Partenariat</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="signatureDate">Date de signature</label>
+                            <input type="date" id="signatureDate">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="partnerServices">Prestations de services</label>
+                            <input type="text" id="partnerServices" placeholder="Prestations fournies">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="discountPercentage">Pourcentage de réduction</label>
+                            <input type="number" id="discountPercentage" value="0" min="0" max="100">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="contactPerson">Contact de l'entreprise</label>
+                            <input type="text" id="contactPerson" placeholder="Personne contact">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>&nbsp;</label>
+                            <button id="addPartnership">Ajouter</button>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="contractStatus">Statut du contrat</label>
+                        <select id="contractStatus">
+                            <option value="actif">Actif</option>
+                            <option value="negociation">En Négociation</option>
+                            <option value="termine">Terminé</option>
+                            <option value="suspendu">Suspendu</option>
+                            <option value="revision">En Révision</option>
+                        </select>
+                    </div>
+                    
+                    <table id="partnershipsTable">
+                        <thead>
+                            <tr>
+                                <th>Nom de l'entreprise</th>
+                                <th>Type de Contrat</th>
+                                <th>Date de Signature</th>
+                                <th>Prestations de services</th>
+                                <th>Pourcentage de réduction</th>
+                                <th>Contact de l'entreprise</th>
+                                <th>Statut du Contrat</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Les lignes seront ajoutées dynamiquement -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Nouvel Onglet Historique & Graphiques -->
+                <div id="history" class="tab-content">
+                    <h2>Historique & Graphiques</h2>
+                    
+                    <div class="week-selector">
+                        <div class="form-group" style="flex: 2;">
+                            <label for="weekSelector">Sélectionner une semaine</label>
+                            <select id="weekSelector">
+                                <option value="all">Toutes les semaines</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="flex: 1;">
+                            <label for="chartType">Type de graphique</label>
+                            <select id="chartType">
+                                <option value="bar">Barres</option>
+                                <option value="line">Lignes</option>
+                                <option value="pie">Camembert</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="charts-grid">
+                        <div class="chart-container">
+                            <h3>CA par Employé</h3>
+                            <canvas id="employeeChart"></canvas>
+                        </div>
+                        
+                        <div class="chart-container">
+                            <h3>Évolution du CA Total</h3>
+                            <canvas id="totalChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="summary-box">
+                        <h3>Historique des Semaines</h3>
+                        <table id="historyTable">
+                            <thead>
+                                <tr>
+                                    <th>Semaine</th>
+                                    <th>Employés</th>
+                                    <th>CA Total</th>
+                                    <th>Bénéfice Net</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Les lignes seront ajoutées dynamiquement -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Section Gestion des Baux Immobiliers -->
+            <section id="gestion-baux" class="section">
+                <h2>Gestion des Baux Immobiliers</h2>
+                <p class="subtitle">Suivi complet des locations et ventes par employé</p>
+                
+                <div class="dashboard">
+                    <div class="card">
+                        <h2><i class="fas fa-file-contract"></i> Saisie des Baux</h2>
+                        
+                        <div class="employee-tabs">
+                            <div class="employee-tab active" data-tab="KyleMiller">Kyle Miller</div>
+                            <div class="employee-tab" data-tab="employe2">Employé 2</div>
+                            <div class="employee-tab" data-tab="employe3">Employé 3</div>
+                            <div class="employee-tab" data-tab="employe4">Employé 4</div>
+                            <div class="employee-tab" data-tab="employe5">Employé 5</div>
+                        </div>
+
+                        <!-- Contenu pour Employé 1 -->
+                        <div id="KyleMiller" class="employee-tab-content active">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="date1">Date de création du bail</label>
+                                    <input type="date" id="date1">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="client1">Client / Locataire</label>
+                                    <input type="text" id="client1" placeholder="Nom du client">
+                                </div>
+                                
+                                <div class="form-group full-width">
+                                    <label for="interieur1">Intérieur choisi</label>
+                                    <input type="text" id="interieur1" placeholder="Description de l'intérieur">
+                                </div>
+                                
+                                <div class="form-group full-width">
+                                    <label for="rue1">Rue du bien</label>
+                                    <input type="text" id="rue1" placeholder="Adresse du bien">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="garages1">Nombre de garages</label>
+                                    <select id="garages1">
+                                        <option value="0">0</option>
+                                        <option value="2">2</option>
+                                        <option value="4">4</option>
+                                        <option value="6">6</option>
+                                        <option value="12">12</option>
+                                        <option value="24">24</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="ca1">Chiffre d'Affaires ($)</label>
+                                    <input type="number" id="ca1" min="0" step="0.01" placeholder="Montant du CA">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="reduction1">Réduction (%)</label>
+                                    <div class="percentage-input">
+                                        <input type="number" id="reduction1" min="0" max="100" step="0.1" placeholder="0" value="0">
+                                        <span class="percentage-symbol">%</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group full-width">
+                                    <div class="checkbox-group important">
+                                        <input type="checkbox" id="resilie1">
+                                        <label for="resilie1">Bail résilié</label>
+                                    </div>
+                                    
+                                    <div class="checkbox-group validated">
+                                        <input type="checkbox" id="valide1">
+                                        <label for="valide1">Validé par le patron</label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="actions">
+                                <button class="btn btn-primary" onclick="enregistrerBail(1)">
+                                    <i class="fas fa-save"></i> Enregistrer le bail
+                                </button>
+                                <button class="btn btn-success" onclick="calculerBenefice(1)">
+                                    <i class="fas fa-calculator"></i> Calculer
+                                </button>
+                                <button class="btn btn-warning" onclick="reinitialiserFormulaire(1)">
+                                    <i class="fas fa-redo"></i> Nouveau
+                                </button>
+                            </div>
+                            
+                            <div class="results">
+                                <h3>Résultats de Kyle Miller</h3>
+                                <div class="result-item">
+                                    <span>Chiffre d'Affaires:</span>
+                                    <span id="ca-result1" class="result-value ca-value">0 $</span>
+                                </div>
+                                <div class="result-item">
+                                    <span>Réduction:</span>
+                                    <span id="reduction-result1" class="result-value reduction-value">0 $ (0%)</span>
+                                </div>
+                                <div class="result-item">
+                                    <span>Bénéfice:</span>
+                                    <span id="benefice1" class="result-value benefice-value">0 $</span>
+                                </div>
+                                <div class="result-item">
+                                    <span>Statut:</span>
+                                    <span id="statut1" class="badge warning">En cours</span>
+                                </div>
+                            </div>
+                            
+                            <div class="history-section">
+                                <h3><i class="fas fa-history"></i> Historique des baux</h3>
+                                <div id="history1">
+                                    <div class="empty-history">Aucun bail enregistré pour le moment</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Contenu pour les autres employés (similaire) -->
+                        <!-- Le code complet pour les autres employés est disponible dans le code source complet -->
+                    </div>
+
+                    <div class="card total-card">
+                        <h2><i class="fas fa-chart-bar"></i> Tableau de Bord Global</h2>
+                        <div class="result-item">
+                            <span>CA Total:</span>
+                            <span id="total-ca" class="result-value">0 $</span>
+                        </div>
+                        <div class="result-item">
+                            <span>Réductions Total:</span>
+                            <span id="total-reduction" class="result-value">0 $</span>
+                        </div>
+                        <div class="result-item">
+                            <span>Bénéfice Total:</span>
+                            <span id="total-benefice" class="result-value">0 $</span>
+                        </div>
+                        <div class="result-item">
+                            <span>Baux validés:</span>
+                            <span id="baux-valides" class="result-value">0</span>
+                        </div>
+                        <div class="result-item">
+                            <span>Baux résiliés:</span>
+                            <span id="baux-resilies" class="result-value">0</span>
+                        </div>
+                        <div class="result-item">
+                            <span>Total baux créés:</span>
+                            <span id="total-baux" class="result-value">0</span>
+                        </div>
+                        <div class="total-result" id="performance-indicator">
+                            Performance: En attente de données
+                        </div>
+                        
+                        <div style="margin-top: 25px;">
+                            <h3><i class="fas fa-calendar-alt"></i> Baux par jour</h3>
+                            <div id="baux-par-jour">
+                                <div style="text-align: center; padding: 15px; color: rgba(255,255,255,0.7);">
+                                    Aucune donnée disponible
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="instructions">
+                    <h3><i class="fas fa-info-circle"></i> Instructions d'utilisation</h3>
+                    <ul>
+                        <li>Renseignez tous les détails du bail et cliquez sur "Enregistrer le bail"</li>
+                        <li>Pour modifier un bail existant, cliquez sur "Modifier" dans l'historique</li>
+                        <li>Si un client vous appelle et qu'il veut résilier le bail, veuillez modifier votre bail et le renseigner</li>
+                        <li>Attention : Seul le patron a le droit de valider le bail !</li>
+                        <li>Et si vous avez besoin d'information pour les rues, voici le lien : <a href="https://gtamap.xyz/" target="_blank">https://gtamap.xyz/</a></li>
+                    </ul>
+                </div>
+            </section>
+            
+            <!-- Section Détails Location et Achat -->
+            <section id="details-location" class="section">
+                <h2>Détails de Location et Achat</h2>
+                <p class="subtitle">Configurez les paramètres et calculez les coûts automatiquement</p>
+                
+                <div class="tabs-container">
+                    <div class="tabs">
+                        <button class="tab active" data-tab="main">Calculatrice</button>
+                        <button class="tab" data-tab="endroit">Endroit convoitable</button>
+                        <button class="tab" data-tab="zone">Zone d'habitation</button>
+                    </div>
+                    
+                    <div id="main-tab" class="tab-content active">
+                        <div class="form-container">
+                            <div class="form-section">
+                                <h2>Sélection des Options</h2>
+                                
+                                <div class="form-group">
+                                    <label for="interior-type">Type d'intérieur</label>
+                                    <select id="interior-type">
+                                        <option value="">Sélectionnez un type d'intérieur</option>
+                                        <!-- Les options seront ajoutées dynamiquement par JavaScript -->
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="zone">Zone</label>
+                                    <select id="zone">
+                                        <option value="">Sélectionnez une zone</option>
+                                        <option value="Classe 1">Classe 1</option>
+                                        <option value="Classe 2">Classe 2</option>
+                                        <option value="Classe 3">Classe 3</option>
+                                        <option value="Classe 4">Classe 4</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="garage">Garage</label>
+                                    <select id="garage">
+                                        <option value="">Sélectionnez un garage</option>
+                                        <option value="0 place">0 place</option>
+                                        <option value="2 place">2 place</option>
+                                        <option value="4 place">4 place</option>
+                                        <option value="6 place">6 place</option>
+                                        <option value="12 place">12 place</option>
+                                        <option value="24 place">24 place</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="form-section">
+                                <h2>Configuration des Taxes</h2>
+                                
+                                <div class="tax-grid">
+                                    <div class="form-group">
+                                        <div class="tax-input">
+                                            <input type="number" id="location-tax" min="0" max="100" value="10">
+                                            <span>% Taxe de location</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <div class="tax-input">
+                                            <input type="number" id="purchase-tax" min="0" max="100" value="5">
+                                            <span>% Taxe d'achat</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="info-text">
+                                    Les calculs se mettent à jour automatiquement lorsque vous modifiez les options.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="results-container">
+                            <div class="results-section rental">
+                                <h2>Résultats pour la Location</h2>
+                                <div class="results-grid">
+                                    <div class="result-card">
+                                        <h3>Prix de Base</h3>
+                                        <div class="result-value" id="rental-base-price">$0</div>
+                                    </div>
+                                    
+                                    <div class="result-card">
+                                        <h3>Taxe de Location</h3>
+                                        <div class="result-value" id="rental-tax-amount">$0</div>
+                                    </div>
+                                    
+                                    <div class="weight-card">
+                                        <h3>Poids Maximum du Coffre</h3>
+                                        <div class="weight-value" id="max-weight">0 kg</div>
+                                    </div>
+                                    
+                                    <div class="total-card">
+                                        <h3>Prix Final de Location</h3>
+                                        <div class="total-value" id="final-rental-price">$0</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="results-section purchase">
+                                <h2>Résultats pour l'Achat</h2>
+                                <div class="results-grid">
+                                    <div class="result-card">
+                                        <h3>Prix du Coffre</h3>
+                                        <div class="result-value" id="purchase-coffre-price">$0</div>
+                                    </div>
+                                    
+                                    <div class="result-card">
+                                        <h3>Prix du Garage</h3>
+                                        <div class="result-value" id="purchase-garage-price">$0</div>
+                                    </div>
+                                    
+                                    <div class="result-card">
+                                        <h3>Prix de la Zone</h3>
+                                        <div class="result-value" id="purchase-zone-price">$0</div>
+                                    </div>
+                                    
+                                    <div class="result-card">
+                                        <h3>Prix de la Catégorie</h3>
+                                        <div class="result-value" id="purchase-category-price">$0</div>
+                                    </div>
+                                    
+                                    <div class="result-card">
+                                        <h3>Taxe d'Achat</h3>
+                                        <div class="result-value" id="purchase-tax-amount">$0</div>
+                                    </div>
+                                    
+                                    <div class="total-card">
+                                        <h3>Prix Final d'Achat</h3>
+                                        <div class="total-value" id="final-purchase-price">$0</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="actions">
+                            <button class="btn-secondary" id="reset-btn">Réinitialiser</button>
+                        </div>
+                    </div>
+                    
+                    <div id="endroit-tab" class="tab-content">
+                        <div class="image-container">
+                            <img src="Endroitmaps.png" alt="Endroit convoitable">
+                        </div>
+                    </div>
+                    
+                    <div id="zone-tab" class="tab-content">
+                        <div class="image-container">
+                            <img src="Zonemaps.jpg" alt="Zone d'habitation">
+                            <a href="https://gtamap.xyz" target="_blank" class="image-link">Voir sur gtamap.xyz</a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Section Grille des Salaires -->
+            <section id="grille-salaires" class="section">
+                <h2>Grille des Salaires</h2>
+                <p class="subtitle">Structure de rémunération et responsabilités</p>
+                
+                <table class="salary-table">
+                    <thead>
+                        <tr>
+                            <th>Grade</th>
+                            <th>Salaire Minimum Hebdo</th>
+                            <th>Rémunération toutes les 15 minutes</th>
+                            <th>Commission sur Vente<br><small>(Uniquement les achats directs)</small></th>
+                            <th>Responsabilités Clés</th>
+                            <th>Primes<br><small>(Activité hebdomadaire)</small></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="grade-cell">Patron</td>
+                            <td class="salary-cell">$40 000</td>
+                            <td class="salary-cell">$1 200</td>
+                            <td class="commission-cell">25%</td>
+                            <td class="responsibilities">Plein pouvoir de vente, négociation de gros contrats, gestion de deals spéciaux.</td>
+                            <td>Varie selon l'activité</td>
+                        </tr>
+                        <tr>
+                            <td class="grade-cell">Co-patron</td>
+                            <td class="salary-cell">$35 000</td>
+                            <td class="salary-cell">$900</td>
+                            <td class="commission-cell">20%</td>
+                            <td class="responsibilities">Plein pouvoir de vente, négociation de gros contrats, gestion de deals spéciaux.</td>
+                            <td>Varie selon l'activité</td>
+                        </tr>
+                        <tr>
+                            <td class="grade-cell">Manager</td>
+                            <td class="salary-cell">$25 000</td>
+                            <td class="salary-cell">$700</td>
+                            <td class="commission-cell">18%</td>
+                            <td class="responsibilities">Vente autonome de tous types de biens, supervision stagiaires/employés, validation des ventes.</td>
+                            <td>Varie selon l'activité</td>
+                        </tr>
+                        <tr>
+                            <td class="grade-cell">Employé</td>
+                            <td class="salary-cell">$20 000</td>
+                            <td class="salary-cell">$500</td>
+                            <td class="commission-cell">15%</td>
+                            <td class="responsibilities">Réalisation de ventes simples (appartements, petites maisons, entrepôts) sans supervision. Validation Manager/Patron pour biens importants (villa...).</td>
+                            <td>Varie selon l'activité</td>
+                        </tr>
+                        <tr>
+                            <td class="grade-cell">Stagiaire</td>
+                            <td class="salary-cell">$15 000</td>
+                            <td class="salary-cell">$300</td>
+                            <td class="commission-cell">8%</td>
+                            <td class="responsibilities">Accompagnement vente, préparation papiers, visites. Signature finale valide par un supérieur (Patron, Co patron, Manager).</td>
+                            <td>Varie selon l'activité</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <footer>
+                    <p>Document interne - Dernière mise à jour: <span id="current-date"></span></p>
+                </footer>
+            </section>
+        </div>
+    </div>
+
+    <script>
+        // Gestion du menu hamburger
+        document.addEventListener('DOMContentLoaded', function() {
+            const hamburgerBtn = document.querySelector('.hamburger-btn');
+            const sidebar = document.querySelector('.sidebar');
+            const menuOverlay = document.querySelector('.menu-overlay');
+            const mainContent = document.querySelector('.main-content');
+            const menuItems = document.querySelectorAll('.menu-item');
+            const sections = document.querySelectorAll('.section');
+            
+            // Ouvrir/fermer le menu
+            hamburgerBtn.addEventListener('click', function() {
+                sidebar.classList.toggle('active');
+                menuOverlay.style.display = sidebar.classList.contains('active') ? 'block' : 'none';
+                mainContent.classList.toggle('shifted');
+            });
+            
+            // Fermer le menu en cliquant sur l'overlay
+            menuOverlay.addEventListener('click', function() {
+                sidebar.classList.remove('active');
+                menuOverlay.style.display = 'none';
+                mainContent.classList.remove('shifted');
+            });
+            
+            // Navigation entre les sections
+            menuItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const sectionId = this.getAttribute('data-section');
+                    
+                    // Mettre à jour l'élément actif du menu
+                    menuItems.forEach(i => i.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Afficher la section correspondante
+                    sections.forEach(section => section.classList.remove('active'));
+                    document.getElementById(sectionId).classList.add('active');
+                    
+                    // Fermer le menu sur mobile
+                    if (window.innerWidth <= 768) {
+                        sidebar.classList.remove('active');
+                        menuOverlay.style.display = 'none';
+                        mainContent.classList.remove('shifted');
+                    }
+                });
+            });
+            
+            // Ajouter la date actuelle
+            document.getElementById('current-date').textContent = new Date().toLocaleDateString('fr-FR');
+            
+            // Initialiser les fonctionnalités de la gestion des salaires
+            initGestionSalaires();
+            
+            // Initialiser les fonctionnalités de la gestion des baux
+            initGestionBaux();
+            
+            // Initialiser les fonctionnalités des détails de location/achat
+            initDetailsLocation();
+        });
+        
+        // Initialisation de la gestion des salaires
+        function initGestionSalaires() {
+            // Salaires fixes par grade
+            const SALARIES = {
+                patron: 40000,
+                copatron: 35000,
+                manager: 25000,
+                employe: 20000,
+                stagiaire: 15000
+            };
+
+            // Noms des grades
+            const GRADE_NAMES = {
+                patron: "Patron",
+                copatron: "Co-Patron",
+                manager: "Manager",
+                employe: "Employé",
+                stagiaire: "Stagiaire"
+            };
+
+            // Noms des statuts de contrat
+            const STATUS_NAMES = {
+                actif: "Actif",
+                negociation: "En Négociation",
+                termine: "Terminé",
+                suspendu: "Suspendu",
+                revision: "En Révision"
+            };
+
+            // Données de l'application
+            let weeklyData = []; // Stocke toutes les données par semaine
+            let partnershipsData = []; // Stocke les données des partenariats
+            let expensesData = []; // Stocke les données des dépenses
+            let expenses = {
+                taxRate: 10,
+                agencyCosts: 0
+            };
+            
+            // Variables pour l'édition
+            let editingPartnershipId = null;
+            let editingExpenseId = null;
+            
+            // Éléments DOM
+            const tabs = document.querySelectorAll('.tab');
+            const tabContents = document.querySelectorAll('.tab-content');
+            const weekDateInput = document.getElementById('weekDate');
+            const employeeNameInput = document.getElementById('employeeName');
+            const employeeGradeInput = document.getElementById('employeeGrade');
+            const weeklyRevenueInput = document.getElementById('weeklyRevenue');
+            const addEmployeeBtn = document.getElementById('addEmployee');
+            const employeesTable = document.getElementById('employeesTable').getElementsByTagName('tbody')[0];
+            const commissionOptions = document.querySelectorAll('.commission-option');
+            const propertyValueInput = document.getElementById('propertyValue');
+            const customPercentContainer = document.getElementById('customPercentContainer');
+            const customPercentInput = document.getElementById('customPercent');
+            const calculateCommissionBtn = document.getElementById('calculateCommission');
+            const commissionResult = document.getElementById('commissionResult');
+            const taxRateInput = document.getElementById('taxRate');
+            const updateExpensesBtn = document.getElementById('updateExpenses');
+            const distributeBonusesBtn = document.getElementById('distributeBonuses');
+            const weekSelector = document.getElementById('weekSelector');
+            const summaryWeekSelector = document.getElementById('summaryWeekSelector');
+            const chartTypeSelect = document.getElementById('chartType');
+            const historyTable = document.getElementById('historyTable').getElementsByTagName('tbody')[0];
+            const currentWeekInfo = document.getElementById('currentWeekInfo');
+            const summaryWeekTitle = document.getElementById('summaryWeekTitle');
+            
+            // Éléments pour les partenariats
+            const partnerNameInput = document.getElementById('partnerName');
+            const contractTypeInput = document.getElementById('contractType');
+            const signatureDateInput = document.getElementById('signatureDate');
+            const partnerServicesInput = document.getElementById('partnerServices');
+            const discountPercentageInput = document.getElementById('discountPercentage');
+            const contactPersonInput = document.getElementById('contactPerson');
+            const contractStatusInput = document.getElementById('contractStatus');
+            const addPartnershipBtn = document.getElementById('addPartnership');
+            const partnershipsTable = document.getElementById('partnershipsTable').getElementsByTagName('tbody')[0];
+            
+            // Éléments pour les dépenses
+            const expenseDateInput = document.getElementById('expenseDate');
+            const expenseCompanyInput = document.getElementById('expenseCompany');
+            const expenseCostInput = document.getElementById('expenseCost');
+            const addExpenseBtn = document.getElementById('addExpense');
+            const expensesTable = document.getElementById('expensesTable').getElementsByTagName('tbody')[0];
+            
+            // Variables pour le calcul de commission
+            let selectedCommissionPercent = 15;
+            
+            // Variables pour les graphiques
+            let employeeChart = null;
+            let totalChart = null;
+            
+            // Fonction pour obtenir la date du lundi de la semaine
+            function getMonday(date) {
+                const d = new Date(date);
+                const day = d.getDay();
+                const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+                return new Date(d.setDate(diff));
+            }
+            
+            // Fonction pour formater la date de la semaine
+            function formatWeekRange(date) {
+                const monday = getMonday(date);
+                const sunday = new Date(monday);
+                sunday.setDate(monday.getDate() + 6);
+                
+                return `Semaine du ${monday.toLocaleDateString('fr-FR')} au ${sunday.toLocaleDateString('fr-FR')}`;
+            }
+            
+            // Fonction pour obtenir la clé de la semaine (lundi de la semaine)
+            function getWeekKey(date) {
+                const monday = getMonday(date);
+                return monday.toISOString().split('T')[0]; // Format YYYY-MM-DD
+            }
+            
+            // Initialisation
+            // Définir la date par défaut sur aujourd'hui
+            const today = new Date();
+            weekDateInput.value = today.toISOString().split('T')[0];
+            signatureDateInput.value = today.toISOString().split('T')[0];
+            expenseDateInput.value = today.toISOString().split('T')[0];
+            updateCurrentWeekInfo();
+            
+            // Charger les données sauvegardées si disponibles
+            loadData();
+            
+            // Mettre à jour les résumés
+            updateExpensesSummary();
+            updateWeeklySummary();
+            updateHistoryDisplay();
+            updatePartnershipsTable();
+            updateExpensesTable();
+            
+            // Configuration des onglets
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const tabId = tab.getAttribute('data-tab');
+                    
+                    // Désactiver tous les onglets
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tabContents.forEach(tc => tc.classList.remove('active'));
+                    
+                    // Activer l'onglet sélectionné
+                    tab.classList.add('active');
+                    document.getElementById(tabId).classList.add('active');
+                    
+                    // Mettre à jour les graphiques si onglet historique
+                    if (tabId === 'history') {
+                        updateCharts();
+                    }
+                });
+            });
+            
+            // Configuration des options de commission
+            commissionOptions.forEach(option => {
+                option.addEventListener('click', () => {
+                    commissionOptions.forEach(o => o.classList.remove('selected'));
+                    option.classList.add('selected');
+                    
+                    if (option.getAttribute('data-percent') === 'custom') {
+                        customPercentContainer.style.display = 'block';
+                        selectedCommissionPercent = 0;
+                    } else {
+                        customPercentContainer.style.display = 'none';
+                        selectedCommissionPercent = parseInt(option.getAttribute('data-percent'));
+                    }
+                });
+            });
+            
+            // Calculer la commission
+            calculateCommissionBtn.addEventListener('click', calculateCommission);
+            
+            // Ajouter un employé
+            addEmployeeBtn.addEventListener('click', addEmployee);
+            
+            // Ajouter ou modifier un partenariat
+            addPartnershipBtn.addEventListener('click', addOrUpdatePartnership);
+            
+            // Ajouter ou modifier une dépense
+            addExpenseBtn.addEventListener('click', addOrUpdateExpense);
+            
+            // Mettre à jour les dépenses
+            updateExpensesBtn.addEventListener('click', updateExpenses);
+            
+            // Distribuer les primes
+            distributeBonusesBtn.addEventListener('click', distributeBonuses);
+            
+            // Changer la date de la semaine
+            weekDateInput.addEventListener('change', updateCurrentWeekInfo);
+            
+            // Changer la semaine dans le résumé
+            summaryWeekSelector.addEventListener('change', updateWeeklySummary);
+            
+            // Changer le type de graphique
+            chartTypeSelect.addEventListener('change', updateCharts);
+            
+            // Changer la semaine sélectionnée
+            weekSelector.addEventListener('change', updateCharts);
+            
+            // Sélectionner 15% par défaut
+            document.querySelector('.commission-option[data-percent="15"]').click();
+            
+            // Fonctions
+            function updateCurrentWeekInfo() {
+                const weekRange = formatWeekRange(new Date(weekDateInput.value));
+                currentWeekInfo.textContent = weekRange;
+            }
+            
+            function addEmployee() {
+                const weekDate = weekDateInput.value;
+                const name = employeeNameInput.value.trim();
+                const grade = employeeGradeInput.value;
+                const revenue = parseFloat(weeklyRevenueInput.value) || 0;
+                
+                if (!name) {
+                    alert('Veuillez entrer un nom valide');
+                    return;
+                }
+                
+                if (!weekDate) {
+                    alert('Veuillez sélectionner une date de semaine');
+                    return;
+                }
+                
+                const salary = SALARIES[grade];
+                const gradeName = GRADE_NAMES[grade];
+                const weekKey = getWeekKey(weekDate);
+                const weekRange = formatWeekRange(new Date(weekDate));
+                
+                const employee = {
+                    id: Date.now(),
+                    name: name,
+                    grade: grade,
+                    gradeName: gradeName,
+                    weeklyRevenue: revenue,
+                    salary: salary
+                };
+                
+                // Trouver ou créer la semaine
+                let weekData = weeklyData.find(w => w.weekKey === weekKey);
+                if (!weekData) {
+                    weekData = {
+                        weekKey: weekKey,
+                        weekRange: weekRange,
+                        employees: [],
+                        totalRevenue: 0,
+                        totalSalaries: 0
+                    };
+                    weeklyData.push(weekData);
+                }
+                
+                // Ajouter l'employé à la semaine
+                weekData.employees.push(employee);
+                
+                // Mettre à jour les totaux de la semaine
+                updateWeekTotals(weekData);
+                
+                // Mettre à jour l'affichage
+                updateEmployeesTable();
+                updateExpensesSummary();
+                updateWeeklySummary();
+                updateHistoryDisplay();
+                saveData();
+                
+                // Réinitialiser les champs (sauf la date)
+                employeeNameInput.value = '';
+                employeeGradeInput.value = 'employe';
+                weeklyRevenueInput.value = '';
+            }
+            
+            function addOrUpdatePartnership() {
+                const name = partnerNameInput.value.trim();
+                const contractType = contractTypeInput.value;
+                const signatureDate = signatureDateInput.value;
+                const services = partnerServicesInput.value.trim();
+                const discount = parseFloat(discountPercentageInput.value) || 0;
+                const contact = contactPersonInput.value.trim();
+                const status = contractStatusInput.value;
+                
+                if (!name) {
+                    alert('Veuillez entrer un nom d\'entreprise valide');
+                    return;
+                }
+                
+                if (!signatureDate) {
+                    alert('Veuillez sélectionner une date de signature');
+                    return;
+                }
+                
+                if (editingPartnershipId) {
+                    // Mettre à jour un partenariat existant
+                    const partnershipIndex = partnershipsData.findIndex(p => p.id === editingPartnershipId);
+                    if (partnershipIndex !== -1) {
+                        partnershipsData[partnershipIndex] = {
+                            id: editingPartnershipId,
+                            name: name,
+                            contractType: contractType,
+                            signatureDate: signatureDate,
+                            services: services,
+                            discount: discount,
+                            contact: contact,
+                            status: status
+                        };
+                        
+                        // Réinitialiser le mode édition
+                        editingPartnershipId = null;
+                        addPartnershipBtn.textContent = 'Ajouter';
+                        
+                        // Mettre à jour l'affichage
+                        updatePartnershipsTable();
+                        saveData();
+                        
+                        // Réinitialiser les champs
+                        resetPartnershipForm();
+                        
+                        alert('Partenariat mis à jour avec succès!');
+                    }
+                } else {
+                    // Ajouter un nouveau partenariat
+                    const partnership = {
+                        id: Date.now(),
+                        name: name,
+                        contractType: contractType,
+                        signatureDate: signatureDate,
+                        services: services,
+                        discount: discount,
+                        contact: contact,
+                        status: status
+                    };
+                    
+                    // Ajouter le partenariat
+                    partnershipsData.push(partnership);
+                    
+                    // Mettre à jour l'affichage
+                    updatePartnershipsTable();
+                    saveData();
+                    
+                    // Réinitialiser les champs
+                    resetPartnershipForm();
+                    
+                    alert('Partenariat ajouté avec succès!');
+                }
+            }
+            
+            function addOrUpdateExpense() {
+                const date = expenseDateInput.value;
+                const company = expenseCompanyInput.value.trim();
+                const cost = parseFloat(expenseCostInput.value) || 0;
+                
+                if (!date) {
+                    alert('Veuillez sélectionner une date');
+                    return;
+                }
+                
+                if (!company) {
+                    alert('Veuillez entrer un nom d\'entreprise ou un sujet valide');
+                    return;
+                }
+                
+                if (cost <= 0) {
+                    alert('Veuillez entrer un coût valide');
+                    return;
+                }
+                
+                if (editingExpenseId) {
+                    // Mettre à jour une dépense existante
+                    const expenseIndex = expensesData.findIndex(e => e.id === editingExpenseId);
+                    if (expenseIndex !== -1) {
+                        expensesData[expenseIndex] = {
+                            id: editingExpenseId,
+                            date: date,
+                            company: company,
+                            cost: cost
+                        };
+                        
+                        // Réinitialiser le mode édition
+                        editingExpenseId = null;
+                        addExpenseBtn.textContent = 'Ajouter';
+                        
+                        // Mettre à jour l'affichage
+                        updateExpensesTable();
+                        updateExpensesSummary();
+                        saveData();
+                        
+                        // Réinitialiser les champs
+                        resetExpenseForm();
+                        
+                        alert('Dépense mise à jour avec succès!');
+                    }
+                } else {
+                    // Ajouter une nouvelle dépense
+                    const expense = {
+                        id: Date.now(),
+                        date: date,
+                        company: company,
+                        cost: cost
+                    };
+                    
+                    // Ajouter la dépense
+                    expensesData.push(expense);
+                    
+                    // Mettre à jour l'affichage
+                    updateExpensesTable();
+                    updateExpensesSummary();
+                    saveData();
+                    
+                    // Réinitialiser les champs
+                    resetExpenseForm();
+                    
+                    alert('Dépense ajoutée avec succès!');
+                }
+            }
+            
+            function resetPartnershipForm() {
+                partnerNameInput.value = '';
+                contractTypeInput.value = 'partenariat';
+                signatureDateInput.value = new Date().toISOString().split('T')[0];
+                partnerServicesInput.value = '';
+                discountPercentageInput.value = 0;
+                contactPersonInput.value = '';
+                contractStatusInput.value = 'actif';
+            }
+            
+            function resetExpenseForm() {
+                expenseDateInput.value = new Date().toISOString().split('T')[0];
+                expenseCompanyInput.value = '';
+                expenseCostInput.value = '';
+            }
+            
+            function editPartnership(partnershipId) {
+                const partnership = partnershipsData.find(p => p.id === partnershipId);
+                if (partnership) {
+                    // Remplir le formulaire avec les données du partenariat
+                    partnerNameInput.value = partnership.name;
+                    contractTypeInput.value = partnership.contractType;
+                    signatureDateInput.value = partnership.signatureDate;
+                    partnerServicesInput.value = partnership.services;
+                    discountPercentageInput.value = partnership.discount;
+                    contactPersonInput.value = partnership.contact;
+                    contractStatusInput.value = partnership.status;
+                    
+                    // Passer en mode édition
+                    editingPartnershipId = partnershipId;
+                    addPartnershipBtn.textContent = 'Mettre à jour';
+                    
+                    // Faire défiler vers le formulaire
+                    document.getElementById('partnerships').scrollIntoView({ behavior: 'smooth' });
+                }
+            }
+            
+            function editExpense(expenseId) {
+                const expense = expensesData.find(e => e.id === expenseId);
+                if (expense) {
+                    // Remplir le formulaire avec les données de la dépense
+                    expenseDateInput.value = expense.date;
+                    expenseCompanyInput.value = expense.company;
+                    expenseCostInput.value = expense.cost;
+                    
+                    // Passer en mode édition
+                    editingExpenseId = expenseId;
+                    addExpenseBtn.textContent = 'Mettre à jour';
+                    
+                    // Faire défiler vers le formulaire
+                    document.getElementById('expenses').scrollIntoView({ behavior: 'smooth' });
+                }
+            }
+            
+            function updateWeekTotals(weekData) {
+                weekData.totalRevenue = weekData.employees.reduce((sum, employee) => sum + employee.weeklyRevenue, 0);
+                weekData.totalSalaries = weekData.employees.reduce((sum, employee) => sum + employee.salary, 0);
+            }
+            
+            function updateEmployeesTable() {
+                employeesTable.innerHTML = '';
+                
+                // Afficher tous les employés de toutes les semaines
+                weeklyData.forEach(weekData => {
+                    weekData.employees.forEach(employee => {
+                        const row = employeesTable.insertRow();
+                        
+                        const weekCell = row.insertCell(0);
+                        weekCell.textContent = weekData.weekRange;
+                        
+                        const nameCell = row.insertCell(1);
+                        nameCell.textContent = employee.name;
+                        
+                        const gradeCell = row.insertCell(2);
+                        const gradeBadge = document.createElement('span');
+                        gradeBadge.textContent = employee.gradeName;
+                        gradeBadge.classList.add('grade-badge', `grade-${employee.grade}`);
+                        gradeCell.appendChild(gradeBadge);
+                        
+                        const revenueCell = row.insertCell(3);
+                        revenueCell.textContent = `$${employee.weeklyRevenue.toLocaleString()}`;
+                        revenueCell.classList.add('money');
+                        
+                        const salaryCell = row.insertCell(4);
+                        salaryCell.textContent = `$${employee.salary.toLocaleString()}`;
+                        salaryCell.classList.add('money');
+                        
+                        const actionsCell = row.insertCell(5);
+                        const deleteBtn = document.createElement('button');
+                        deleteBtn.textContent = 'Supprimer';
+                        deleteBtn.classList.add('btn-danger');
+                        deleteBtn.addEventListener('click', () => deleteEmployee(weekData.weekKey, employee.id));
+                        actionsCell.appendChild(deleteBtn);
+                    });
+                });
+            }
+            
+            function updatePartnershipsTable() {
+                partnershipsTable.innerHTML = '';
+                
+                // Afficher tous les partenariats
+                partnershipsData.forEach(partnership => {
+                    const row = partnershipsTable.insertRow();
+                    
+                    const nameCell = row.insertCell(0);
+                    nameCell.textContent = partnership.name;
+                    
+                    const contractTypeCell = row.insertCell(1);
+                    contractTypeCell.textContent = partnership.contractType;
+                    
+                    const signatureDateCell = row.insertCell(2);
+                    signatureDateCell.textContent = new Date(partnership.signatureDate).toLocaleDateString('fr-FR');
+                    
+                    const servicesCell = row.insertCell(3);
+                    servicesCell.textContent = partnership.services;
+                    
+                    const discountCell = row.insertCell(4);
+                    discountCell.textContent = `${partnership.discount}%`;
+                    
+                    const contactCell = row.insertCell(5);
+                    contactCell.textContent = partnership.contact;
+                    
+                    const statusCell = row.insertCell(6);
+                    const statusBadge = document.createElement('span');
+                    statusBadge.textContent = STATUS_NAMES[partnership.status];
+                    statusBadge.classList.add('status-badge', `status-${partnership.status}`);
+                    statusCell.appendChild(statusBadge);
+                    
+                    const actionsCell = row.insertCell(7);
+                    const actionButtons = document.createElement('div');
+                    actionButtons.classList.add('action-buttons');
+                    
+                    const editBtn = document.createElement('button');
+                    editBtn.textContent = 'Modifier';
+                    editBtn.classList.add('btn-warning');
+                    editBtn.addEventListener('click', () => editPartnership(partnership.id));
+                    
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.textContent = 'Supprimer';
+                    deleteBtn.classList.add('btn-danger');
+                    deleteBtn.addEventListener('click', () => deletePartnership(partnership.id));
+                    
+                    actionButtons.appendChild(editBtn);
+                    actionButtons.appendChild(deleteBtn);
+                    actionsCell.appendChild(actionButtons);
+                });
+            }
+            
+            function updateExpensesTable() {
+                expensesTable.innerHTML = '';
+                
+                // Afficher toutes les dépenses
+                expensesData.forEach(expense => {
+                    const row = expensesTable.insertRow();
+                    
+                    const dateCell = row.insertCell(0);
+                    dateCell.textContent = new Date(expense.date).toLocaleDateString('fr-FR');
+                    
+                    const companyCell = row.insertCell(1);
+                    companyCell.textContent = expense.company;
+                    
+                    const costCell = row.insertCell(2);
+                    costCell.textContent = `$${expense.cost.toLocaleString()}`;
+                    costCell.classList.add('money', 'negative');
+                    
+                    const actionsCell = row.insertCell(3);
+                    const actionButtons = document.createElement('div');
+                    actionButtons.classList.add('action-buttons');
+                    
+                    const editBtn = document.createElement('button');
+                    editBtn.textContent = 'Modifier';
+                    editBtn.classList.add('btn-warning');
+                    editBtn.addEventListener('click', () => editExpense(expense.id));
+                    
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.textContent = 'Supprimer';
+                    deleteBtn.classList.add('btn-danger');
+                    deleteBtn.addEventListener('click', () => deleteExpense(expense.id));
+                    
+                    actionButtons.appendChild(editBtn);
+                    actionButtons.appendChild(deleteBtn);
+                    actionsCell.appendChild(actionButtons);
+                });
+            }
+            
+            function deleteEmployee(weekKey, employeeId) {
+                const weekData = weeklyData.find(w => w.weekKey === weekKey);
+                if (weekData) {
+                    weekData.employees = weekData.employees.filter(emp => emp.id !== employeeId);
+                    updateWeekTotals(weekData);
+                    
+                    // Supprimer la semaine si elle n'a plus d'employés
+                    if (weekData.employees.length === 0) {
+                        weeklyData = weeklyData.filter(w => w.weekKey !== weekKey);
+                    }
+                    
+                    updateEmployeesTable();
+                    updateExpensesSummary();
+                    updateWeeklySummary();
+                    updateHistoryDisplay();
+                    saveData();
+                }
+            }
+            
+            function deletePartnership(partnershipId) {
+                if (confirm('Êtes-vous sûr de vouloir supprimer ce partenariat ?')) {
+                    partnershipsData = partnershipsData.filter(p => p.id !== partnershipId);
+                    
+                    // Si on supprime un partenariat en cours d'édition, réinitialiser le formulaire
+                    if (editingPartnershipId === partnershipId) {
+                        editingPartnershipId = null;
+                        addPartnershipBtn.textContent = 'Ajouter';
+                        resetPartnershipForm();
+                    }
+                    
+                    updatePartnershipsTable();
+                    saveData();
+                }
+            }
+            
+            function deleteExpense(expenseId) {
+                if (confirm('Êtes-vous sûr de vouloir supprimer cette dépense ?')) {
+                    expensesData = expensesData.filter(e => e.id !== expenseId);
+                    
+                    // Si on supprime une dépense en cours d'édition, réinitialiser le formulaire
+                    if (editingExpenseId === expenseId) {
+                        editingExpenseId = null;
+                        addExpenseBtn.textContent = 'Ajouter';
+                        resetExpenseForm();
+                    }
+                    
+                    updateExpensesTable();
+                    updateExpensesSummary();
+                    saveData();
+                }
+            }
+            
+            function calculateCommission() {
+                const propertyValue = parseFloat(propertyValueInput.value);
+                
+                if (isNaN(propertyValue) || propertyValue <= 0) {
+                    alert('Veuillez entrer une valeur de bien valide');
+                    return;
+                }
+                
+                let percent = selectedCommissionPercent;
+                
+                if (customPercentContainer.style.display === 'block') {
+                    percent = parseFloat(customPercentInput.value);
+                    if (isNaN(percent) || percent <= 0) {
+                        alert('Veuillez entrer un pourcentage valide');
+                        return;
+                    }
+                }
+                
+                const commission = propertyValue * (percent / 100);
+                commissionResult.textContent = `Commission: $${commission.toLocaleString()}`;
+            }
+            
+            function updateExpenses() {
+                expenses.taxRate = parseFloat(taxRateInput.value) || 0;
+                
+                updateExpensesSummary();
+                updateWeeklySummary();
+                saveData();
+            }
+            
+            function updateExpensesSummary() {
+                // Calcul pour la semaine en cours
+                const currentWeekKey = getWeekKey(new Date(weekDateInput.value));
+                const currentWeekData = weeklyData.find(w => w.weekKey === currentWeekKey);
+                
+                const totalRevenue = currentWeekData ? currentWeekData.totalRevenue : 0;
+                const totalSalaries = currentWeekData ? currentWeekData.totalSalaries : 0;
+                const taxAmount = totalRevenue * (expenses.taxRate / 100);
+                
+                // Calculer les dépenses de la semaine en cours
+                const currentWeekExpenses = expensesData.filter(expense => {
+                    const expenseWeekKey = getWeekKey(new Date(expense.date));
+                    return expenseWeekKey === currentWeekKey;
+                });
+                
+                const totalExpenses = currentWeekExpenses.reduce((sum, expense) => sum + expense.cost, 0);
+                const netProfit = totalRevenue - taxAmount - totalExpenses - totalSalaries;
+                
+                document.getElementById('grossRevenue').textContent = `$${totalRevenue.toLocaleString()}`;
+                document.getElementById('taxAmount').textContent = `$${taxAmount.toLocaleString()}`;
+                document.getElementById('totalExpenses').textContent = `$${totalExpenses.toLocaleString()}`;
+                document.getElementById('totalSalaries').textContent = `$${totalSalaries.toLocaleString()}`;
+                document.getElementById('netProfit').textContent = `$${netProfit.toLocaleString()}`;
+            }
+            
+            function updateWeeklySummary() {
+                const selectedWeek = summaryWeekSelector.value;
+                let weekData;
+                
+                if (selectedWeek === 'current') {
+                    const currentWeekKey = getWeekKey(new Date(weekDateInput.value));
+                    weekData = weeklyData.find(w => w.weekKey === currentWeekKey);
+                    summaryWeekTitle.textContent = 'Semaine en cours';
+                } else {
+                    weekData = weeklyData.find(w => w.weekKey === selectedWeek);
+                    summaryWeekTitle.textContent = weekData ? weekData.weekRange : 'Semaine sélectionnée';
+                }
+                
+                const totalRevenue = weekData ? weekData.totalRevenue : 0;
+                const totalSalaries = weekData ? weekData.totalSalaries : 0;
+                const taxAmount = totalRevenue * (expenses.taxRate / 100);
+                
+                // Calculer les dépenses de la semaine sélectionnée
+                let totalExpenses = 0;
+                if (weekData) {
+                    const weekExpenses = expensesData.filter(expense => {
+                        const expenseWeekKey = getWeekKey(new Date(expense.date));
+                        return expenseWeekKey === weekData.weekKey;
+                    });
+                    totalExpenses = weekExpenses.reduce((sum, expense) => sum + expense.cost, 0);
+                }
+                
+                const netProfit = totalRevenue - taxAmount - totalExpenses - totalSalaries;
+                const profitAfterReserve = Math.max(0, netProfit - 100000);
+                const bonusAmount = profitAfterReserve;
+                
+                document.getElementById('summaryGrossRevenue').textContent = `$${totalRevenue.toLocaleString()}`;
+                document.getElementById('summaryTaxAmount').textContent = `$${taxAmount.toLocaleString()}`;
+                document.getElementById('summaryExpenses').textContent = `$${totalExpenses.toLocaleString()}`;
+                document.getElementById('summarySalaries').textContent = `$${totalSalaries.toLocaleString()}`;
+                document.getElementById('summaryNetProfit').textContent = `$${netProfit.toLocaleString()}`;
+                document.getElementById('profitAfterReserve').textContent = `$${profitAfterReserve.toLocaleString()}`;
+                document.getElementById('bonusAmount').textContent = `$${bonusAmount.toLocaleString()}`;
+            }
+            
+            function distributeBonuses() {
+                const selectedWeek = summaryWeekSelector.value;
+                let weekData;
+                
+                if (selectedWeek === 'current') {
+                    const currentWeekKey = getWeekKey(new Date(weekDateInput.value));
+                    weekData = weeklyData.find(w => w.weekKey === currentWeekKey);
+                } else {
+                    weekData = weeklyData.find(w => w.weekKey === selectedWeek);
+                }
+                
+                if (!weekData) {
+                    alert('Aucune donnée pour cette semaine');
+                    return;
+                }
+                
+                const totalRevenue = weekData.totalRevenue;
+                const totalSalaries = weekData.totalSalaries;
+                const taxAmount = totalRevenue * (expenses.taxRate / 100);
+                
+                // Calculer les dépenses de la semaine sélectionnée
+                const weekExpenses = expensesData.filter(expense => {
+                    const expenseWeekKey = getWeekKey(new Date(expense.date));
+                    return expenseWeekKey === weekData.weekKey;
+                });
+                const totalExpenses = weekExpenses.reduce((sum, expense) => sum + expense.cost, 0);
+                
+                const netProfit = totalRevenue - taxAmount - totalExpenses - totalSalaries;
+                
+                if (netProfit < 100000) {
+                    alert('Le bénéfice net est inférieur à $100,000. Impossible de distribuer des primes.');
+                    return;
+                }
+                
+                const profitAfterReserve = netProfit - 100000;
+                const bonusAmount = profitAfterReserve;
+                
+                const totalEmployeeRevenue = weekData.employees.reduce((sum, employee) => sum + employee.weeklyRevenue, 0);
+                
+                let bonusMessage = `DISTRIBUTION DES PRIMES - ${weekData.weekRange}\n\n`;
+                
+                weekData.employees.forEach(employee => {
+                    const bonus = totalEmployeeRevenue > 0 ? (employee.weeklyRevenue / totalEmployeeRevenue) * bonusAmount : 0;
+                    bonusMessage += `${employee.name} (${employee.gradeName}): $${bonus.toLocaleString()}\n`;
+                });
+                
+                bonusMessage += `\nTOTAL DES PRIMES: $${bonusAmount.toLocaleString()}`;
+                
+                alert(bonusMessage);
+            }
+            
+            function updateHistoryDisplay() {
+                // Mettre à jour les sélecteurs de semaines
+                weekSelector.innerHTML = '<option value="all">Toutes les semaines</option>';
+                summaryWeekSelector.innerHTML = '<option value="current">Semaine en cours</option>';
+                
+                weeklyData.forEach(weekData => {
+                    // Pour le sélecteur des graphiques
+                    const option1 = document.createElement('option');
+                    option1.value = weekData.weekKey;
+                    option1.textContent = weekData.weekRange;
+                    weekSelector.appendChild(option1);
+                    
+                    // Pour le sélecteur du résumé
+                    const option2 = document.createElement('option');
+                    option2.value = weekData.weekKey;
+                    option2.textContent = weekData.weekRange;
+                    summaryWeekSelector.appendChild(option2);
+                });
+                
+                // Mettre à jour le tableau d'historique
+                historyTable.innerHTML = '';
+                weeklyData.forEach(weekData => {
+                    const row = historyTable.insertRow();
+                    
+                    const weekCell = row.insertCell(0);
+                    weekCell.textContent = weekData.weekRange;
+                    
+                    const employeesCell = row.insertCell(1);
+                    employeesCell.textContent = weekData.employees.length + ' employé(s)';
+                    
+                    const revenueCell = row.insertCell(2);
+                    revenueCell.textContent = `$${weekData.totalRevenue.toLocaleString()}`;
+                    revenueCell.classList.add('money');
+                    
+                    const netProfitCell = row.insertCell(3);
+                    const taxAmount = weekData.totalRevenue * (expenses.taxRate / 100);
+                    
+                    // Calculer les dépenses de la semaine
+                    const weekExpenses = expensesData.filter(expense => {
+                        const expenseWeekKey = getWeekKey(new Date(expense.date));
+                        return expenseWeekKey === weekData.weekKey;
+                    });
+                    const totalExpenses = weekExpenses.reduce((sum, expense) => sum + expense.cost, 0);
+                    
+                    const netProfit = weekData.totalRevenue - taxAmount - totalExpenses - weekData.totalSalaries;
+                    netProfitCell.textContent = `$${netProfit.toLocaleString()}`;
+                    netProfitCell.classList.add('money', netProfit >= 0 ? 'positive' : 'negative');
+                    
+                    const actionsCell = row.insertCell(4);
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.textContent = 'Supprimer';
+                    deleteBtn.classList.add('btn-danger');
+                    deleteBtn.addEventListener('click', () => deleteWeek(weekData.weekKey));
+                    actionsCell.appendChild(deleteBtn);
+                });
+            }
+            
+            function deleteWeek(weekKey) {
+                if (confirm('Êtes-vous sûr de vouloir supprimer cette semaine ? Toutes les données seront perdues.')) {
+                    weeklyData = weeklyData.filter(w => w.weekKey !== weekKey);
+                    updateEmployeesTable();
+                    updateExpensesSummary();
+                    updateWeeklySummary();
+                    updateHistoryDisplay();
+                    saveData();
+                }
+            }
+            
+            function updateCharts() {
+                const selectedWeek = weekSelector.value;
+                const chartType = chartTypeSelect.value;
+                
+                // Graphique des employés
+                const employeeCtx = document.getElementById('employeeChart').getContext('2d');
+                if (employeeChart) {
+                    employeeChart.destroy();
+                }
+                
+                let employeeLabels = [];
+                let employeeData = [];
+                
+                if (selectedWeek === 'all') {
+                    // Toutes les semaines - regrouper par employé
+                    const employeeTotals = {};
+                    weeklyData.forEach(weekData => {
+                        weekData.employees.forEach(employee => {
+                            if (!employeeTotals[employee.name]) {
+                                employeeTotals[employee.name] = 0;
+                            }
+                            employeeTotals[employee.name] += employee.weeklyRevenue;
+                        });
+                    });
+                    
+                    employeeLabels = Object.keys(employeeTotals);
+                    employeeData = Object.values(employeeTotals);
+                } else {
+                    // Une semaine spécifique
+                    const weekData = weeklyData.find(w => w.weekKey === selectedWeek);
+                    if (weekData) {
+                        employeeLabels = weekData.employees.map(emp => emp.name);
+                        employeeData = weekData.employees.map(emp => emp.weeklyRevenue);
+                    }
+                }
+                
+                employeeChart = new Chart(employeeCtx, {
+                    type: chartType,
+                    data: {
+                        labels: employeeLabels,
+                        datasets: [{
+                            label: selectedWeek === 'all' ? 'CA Total par Employé ($)' : 'CA par Employé ($)',
+                            data: employeeData,
+                            backgroundColor: [
+                                '#3498db', '#2ecc71', '#e74c3c', '#f39c12', '#9b59b6',
+                                '#1abc9c', '#d35400', '#c0392b', '#16a085', '#8e44ad'
+                            ],
+                            borderColor: '#2c3e50',
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: selectedWeek === 'all' ? 'CA Total par Employé (Toutes semaines)' : 'CA par Employé'
+                            }
+                        }
+                    }
+                });
+                
+                // Graphique de l'évolution du CA total
+                const totalCtx = document.getElementById('totalChart').getContext('2d');
+                if (totalChart) {
+                    totalChart.destroy();
+                }
+                
+                const weekLabels = weeklyData.map(week => {
+                    const date = new Date(week.weekKey);
+                    return `S${date.getWeek()}`; // Fonction getWeek à implémenter
+                });
+                const revenueData = weeklyData.map(week => week.totalRevenue);
+                
+                totalChart = new Chart(totalCtx, {
+                    type: 'line',
+                    data: {
+                        labels: weekLabels,
+                        datasets: [{
+                            label: 'CA Total par Semaine ($)',
+                            data: revenueData,
+                            backgroundColor: 'rgba(52, 152, 219, 0.2)',
+                            borderColor: '#3498db',
+                            borderWidth: 3,
+                            tension: 0.1,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Évolution du Chiffre d\'Affaires par Semaine'
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Ajouter la fonction getWeek à Date.prototype
+            Date.prototype.getWeek = function() {
+                const date = new Date(this.getTime());
+                date.setHours(0, 0, 0, 0);
+                date.setDate(date.getDate() + 3 - (date.getDay() + 6) % 7);
+                const week1 = new Date(date.getFullYear(), 0, 4);
+                return 1 + Math.round(((date.getTime() - week1.getTime()) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7);
+            };
+            
+            function saveData() {
+                const data = {
+                    weeklyData: weeklyData,
+                    partnershipsData: partnershipsData,
+                    expensesData: expensesData,
+                    expenses: expenses
+                };
+                localStorage.setItem('agencyData', JSON.stringify(data));
+            }
+            
+            function loadData() {
+                const savedData = localStorage.getItem('agencyData');
+                if (savedData) {
+                    const data = JSON.parse(savedData);
+                    weeklyData = data.weeklyData || [];
+                    partnershipsData = data.partnershipsData || [];
+                    expensesData = data.expensesData || [];
+                    expenses = data.expenses || {
+                        taxRate: 10,
+                        agencyCosts: 0
+                    };
+                    
+                    // Mettre à jour les champs d'entrée
+                    taxRateInput.value = expenses.taxRate;
+                    
+                    updateEmployeesTable();
+                    updatePartnershipsTable();
+                    updateExpensesTable();
+                }
+            }
+        }
+        
+        // Initialisation de la gestion des baux
+        function initGestionBaux() {
+            // Stockage des données
+            let bauxData = {
+                employe1: [],
+                employe2: [],
+                employe3: [],
+                employe4: [],
+                employe5: []
+            };
+
+            // Variable pour suivre le bail en cours d'édition
+            let bailEnEdition = null;
+
+            // Fonction pour formater la date
+            function formaterDate(dateStr) {
+                const date = new Date(dateStr);
+                return date.toLocaleDateString('fr-FR');
+            }
+
+            // Fonction pour calculer le montant de réduction à partir du pourcentage
+            function calculerMontantReduction(ca, pourcentage) {
+                return (ca * pourcentage) / 100;
+            }
+
+            // Fonction pour enregistrer ou mettre à jour un bail
+            function enregistrerBail(employeNum) {
+                const employeKey = `employe${employeNum}`;
+                
+                // Récupération des valeurs du formulaire
+                const date = document.getElementById(`date${employeNum}`).value;
+                const client = document.getElementById(`client${employeNum}`).value;
+                const interieur = document.getElementById(`interieur${employeNum}`).value;
+                const rue = document.getElementById(`rue${employeNum}`).value;
+                const garages = document.getElementById(`garages${employeNum}`).value;
+                const ca = parseFloat(document.getElementById(`ca${employeNum}`).value) || 0;
+                const reductionPourcentage = parseFloat(document.getElementById(`reduction${employeNum}`).value) || 0;
+                const reductionMontant = calculerMontantReduction(ca, reductionPourcentage);
+                const resilie = document.getElementById(`resilie${employeNum}`).checked;
+                const valide = document.getElementById(`valide${employeNum}`).checked;
+                
+                // Validation des champs obligatoires
+                if (!date || !client || !interieur || !rue) {
+                    alert('Veuillez remplir tous les champs obligatoires');
+                    return;
+                }
+                
+                if (bailEnEdition) {
+                    // Mise à jour d'un bail existant
+                    const index = bauxData[employeKey].findIndex(b => b.id === bailEnEdition.id);
+                    if (index !== -1) {
+                        bauxData[employeKey][index] = {
+                            ...bauxData[employeKey][index],
+                            date: date,
+                            client: client,
+                            interieur: interieur,
+                            rue: rue,
+                            garages: parseInt(garages),
+                            ca: ca,
+                            reductionPourcentage: reductionPourcentage,
+                            reductionMontant: reductionMontant,
+                            benefice: ca - reductionMontant,
+                            resilie: resilie,
+                            valide: valide,
+                            statut: resilie ? 'Résilié' : (valide ? 'Validé' : 'En cours')
+                        };
+                        
+                        alert('Bail mis à jour avec succès !');
+                    }
+                    bailEnEdition = null;
+                } else {
+                    // Création d'un nouveau bail
+                    const bail = {
+                        id: Date.now(),
+                        date: date,
+                        client: client,
+                        interieur: interieur,
+                        rue: rue,
+                        garages: parseInt(garages),
+                        ca: ca,
+                        reductionPourcentage: reductionPourcentage,
+                        reductionMontant: reductionMontant,
+                        benefice: ca - reductionMontant,
+                        resilie: resilie,
+                        valide: valide,
+                        statut: resilie ? 'Résilié' : (valide ? 'Validé' : 'En cours')
+                    };
+                    
+                    // Ajout au tableau des baux
+                    bauxData[employeKey].push(bail);
+                    alert('Bail enregistré avec succès !');
+                }
+                
+                // Mise à jour de l'historique
+                afficherHistorique(employeNum);
+                
+                // Mise à jour des totaux
+                calculerTotaux();
+                
+                // Réinitialisation du formulaire
+                reinitialiserFormulaire(employeNum);
+            }
+
+            // Fonction pour modifier un bail
+            function modifierBail(employeNum, bailId) {
+                const employeKey = `employe${employeNum}`;
+                const bail = bauxData[employeKey].find(b => b.id === bailId);
+                
+                if (bail) {
+                    // Remplir le formulaire avec les données du bail
+                    document.getElementById(`date${employeNum}`).value = bail.date;
+                    document.getElementById(`client${employeNum}`).value = bail.client;
+                    document.getElementById(`interieur${employeNum}`).value = bail.interieur;
+                    document.getElementById(`rue${employeNum}`).value = bail.rue;
+                    document.getElementById(`garages${employeNum}`).value = bail.garages;
+                    document.getElementById(`ca${employeNum}`).value = bail.ca;
+                    document.getElementById(`reduction${employeNum}`).value = bail.reductionPourcentage;
+                    document.getElementById(`resilie${employeNum}`).checked = bail.resilie;
+                    document.getElementById(`valide${employeNum}`).checked = bail.valide;
+                    
+                    // Mettre à jour les résultats
+                    calculerBenefice(employeNum);
+                    
+                    // Stocker le bail en cours d'édition
+                    bailEnEdition = bail;
+                    
+                    // Faire défiler vers le formulaire
+                    document.querySelector(`#employe${employeNum} .form-grid`).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                }
+            }
+
+            // Fonction pour supprimer un bail
+            function supprimerBail(employeNum, bailId) {
+                if (confirm('Êtes-vous sûr de vouloir supprimer ce bail ?')) {
+                    const employeKey = `employe${employeNum}`;
+                    bauxData[employeKey] = bauxData[employeKey].filter(b => b.id !== bailId);
+                    
+                    // Mise à jour de l'historique
+                    afficherHistorique(employeNum);
+                    
+                    // Mise à jour des totaux
+                    calculerTotaux();
+                    
+                    alert('Bail supprimé avec succès !');
+                }
+            }
+
+            // Fonction pour afficher l'historique d'un employé
+            function afficherHistorique(employeNum) {
+                const employeKey = `employe${employeNum}`;
+                const historyElement = document.getElementById(`history${employeNum}`);
+                const baux = bauxData[employeKey];
+                
+                if (baux.length === 0) {
+                    historyElement.innerHTML = '<div class="empty-history">Aucun bail enregistré pour le moment</div>';
+                    return;
+                }
+                
+                let html = `
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Client</th>
+                                <th>Rue</th>
+                                <th>Garages</th>
+                                <th>CA</th>
+                                <th>Statut</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+                
+                baux.forEach(bail => {
+                    const badgeClass = bail.statut === 'Validé' ? 'success' : 
+                                     bail.statut === 'Résilié' ? 'danger' : 'warning';
+                    
+                    html += `
+                        <tr>
+                            <td>${formaterDate(bail.date)}</td>
+                            <td>${bail.client}</td>
+                            <td>${bail.rue}</td>
+                            <td>${bail.garages}</td>
+                            <td>${bail.ca.toFixed(2)} $</td>
+                            <td><span class="badge ${badgeClass}">${bail.statut}</span></td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-warning btn-small" onclick="modifierBail(${employeNum}, ${bail.id})">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-danger btn-small" onclick="supprimerBail(${employeNum}, ${bail.id})">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+                
+                html += '</tbody></table>';
+                historyElement.innerHTML = html;
+            }
+
+            // Fonction pour réinitialiser le formulaire
+            function reinitialiserFormulaire(employeNum) {
+                document.getElementById(`date${employeNum}`).value = '';
+                document.getElementById(`client${employeNum}`).value = '';
+                document.getElementById(`interieur${employeNum}`).value = '';
+                document.getElementById(`rue${employeNum}`).value = '';
+                document.getElementById(`garages${employeNum}`).value = '0';
+                document.getElementById(`ca${employeNum}`).value = '';
+                document.getElementById(`reduction${employeNum}`).value = '0';
+                document.getElementById(`resilie${employeNum}`).checked = false;
+                document.getElementById(`valide${employeNum}`).checked = false;
+                
+                // Réinitialiser les résultats
+                document.getElementById(`ca-result${employeNum}`).textContent = '0 $';
+                document.getElementById(`reduction-result${employeNum}`).textContent = '0 $ (0%)';
+                document.getElementById(`benefice${employeNum}`).textContent = '0 $';
+                document.getElementById(`statut${employeNum}`).textContent = 'En cours';
+                document.getElementById(`statut${employeNum}`).className = 'badge warning';
+                
+                // Réinitialiser le bail en édition
+                bailEnEdition = null;
+            }
+
+            // Fonction pour calculer le bénéfice et mettre à jour le statut
+            function calculerBenefice(employeNum) {
+                const ca = parseFloat(document.getElementById(`ca${employeNum}`).value) || 0;
+                const reductionPourcentage = parseFloat(document.getElementById(`reduction${employeNum}`).value) || 0;
+                const reductionMontant = calculerMontantReduction(ca, reductionPourcentage);
+                const benefice = ca - reductionMontant;
+                
+                // Mise à jour des résultats
+                document.getElementById(`ca-result${employeNum}`).textContent = ca.toFixed(2) + ' $';
+                document.getElementById(`reduction-result${employeNum}`).textContent = reductionMontant.toFixed(2) + ' $ (' + reductionPourcentage.toFixed(1) + '%)';
+                document.getElementById(`benefice${employeNum}`).textContent = benefice.toFixed(2) + ' $';
+                
+                // Mise à jour du statut
+                const resilie = document.getElementById(`resilie${employeNum}`).checked;
+                const valide = document.getElementById(`valide${employeNum}`).checked;
+                const statutElement = document.getElementById(`statut${employeNum}`);
+                
+                if (resilie) {
+                    statutElement.textContent = "Résilié";
+                    statutElement.className = "badge danger";
+                } else if (valide) {
+                    statutElement.textContent = "Validé";
+                    statutElement.className = "badge success";
+                } else {
+                    statutElement.textContent = "En cours";
+                    statutElement.className = "badge warning";
+                }
+            }
+
+            // Fonction pour calculer les totaux de l'équipe
+            function calculerTotaux() {
+                let totalCA = 0;
+                let totalReduction = 0;
+                let totalBenefice = 0;
+                let bauxValides = 0;
+                let bauxResilies = 0;
+                let totalBaux = 0;
+                
+                // Calcul des totaux par employé
+                for (let i = 1; i <= 5; i++) {
+                    const employeKey = `employe${i}`;
+                    bauxData[employeKey].forEach(bail => {
+                        totalCA += bail.ca;
+                        totalReduction += bail.reductionMontant;
+                        totalBenefice += bail.benefice;
+                        totalBaux++;
+                        
+                        if (bail.valide) bauxValides++;
+                        if (bail.resilie) bauxResilies++;
+                    });
+                }
+                
+                // Mise à jour des totaux affichés
+                document.getElementById('total-ca').textContent = totalCA.toFixed(2) + ' $';
+                document.getElementById('total-reduction').textContent = totalReduction.toFixed(2) + ' $';
+                document.getElementById('total-benefice').textContent = totalBenefice.toFixed(2) + ' $';
+                document.getElementById('baux-valides').textContent = bauxValides;
+                document.getElementById('baux-resilies').textContent = bauxResilies;
+                document.getElementById('total-baux').textContent = totalBaux;
+                
+                // Calcul des baux par jour
+                afficherBauxParJour();
+                
+                // Indicateur de performance
+                const performanceIndicator = document.getElementById('performance-indicator');
+                if (totalCA === 0) {
+                    performanceIndicator.textContent = "Performance: En attente de données";
+                } else if (totalBenefice / totalCA > 0.8) {
+                    performanceIndicator.textContent = "Performance: Excellente";
+                    performanceIndicator.style.color = "#2ecc71";
+                } else if (totalBenefice / totalCA > 0.6) {
+                    performanceIndicator.textContent = "Performance: Bonne";
+                    performanceIndicator.style.color = "#f39c12";
+                } else {
+                    performanceIndicator.textContent = "Performance: À améliorer";
+                    performanceIndicator.style.color = "#e74c3c";
+                }
+            }
+
+            // Fonction pour afficher les baux par jour
+            function afficherBauxParJour() {
+                const bauxParJourElement = document.getElementById('baux-par-jour');
+                const bauxParJour = {};
+                
+                // Compter les baux par date
+                for (let i = 1; i <= 5; i++) {
+                    const employeKey = `employe${i}`;
+                    bauxData[employeKey].forEach(bail => {
+                        if (!bauxParJour[bail.date]) {
+                            bauxParJour[bail.date] = 0;
+                        }
+                        bauxParJour[bail.date]++;
+                    });
+                }
+                
+                if (Object.keys(bauxParJour).length === 0) {
+                    bauxParJourElement.innerHTML = '<div style="text-align: center; padding: 15px; color: rgba(255,255,255,0.7);">Aucune donnée disponible</div>';
+                    return;
+                }
+                
+                let html = '';
+                Object.keys(bauxParJour).sort().forEach(date => {
+                    html += `
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px; padding: 8px; background: rgba(255,255,255,0.1); border-radius: 5px;">
+                            <span>${formaterDate(date)}</span>
+                            <span style="font-weight: bold;">${bauxParJour[date]} baux</span>
+                        </div>
+                    `;
+                });
+                
+                bauxParJourElement.innerHTML = html;
+            }
+
+            // Initialisation des écouteurs d'événements
+            // Définir la date d'aujourd'hui par défaut
+            const today = new Date().toISOString().split('T')[0];
+            for (let i = 1; i <= 5; i++) {
+                document.getElementById(`date${i}`).value = today;
+            }
+            
+            // Écouteurs pour les champs de saisie
+            for (let i = 1; i <= 5; i++) {
+                document.getElementById(`ca${i}`).addEventListener('input', () => calculerBenefice(i));
+                document.getElementById(`reduction${i}`).addEventListener('input', () => calculerBenefice(i));
+                document.getElementById(`resilie${i}`).addEventListener('change', () => calculerBenefice(i));
+                document.getElementById(`valide${i}`).addEventListener('change', () => calculerBenefice(i));
+            }
+            
+            // Gestion des onglets
+            document.querySelectorAll('.employee-tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    // Désactiver tous les onglets
+                    document.querySelectorAll('.employee-tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.employee-tab-content').forEach(c => c.classList.remove('active'));
+                    
+                    // Activer l'onglet cliqué
+                    tab.classList.add('active');
+                    document.getElementById(tab.dataset.tab).classList.add('active');
+                    
+                    // Afficher l'historique de l'employé sélectionné
+                    const employeNum = tab.dataset.tab.replace('employe', '');
+                    afficherHistorique(employeNum);
+                });
+            });
+            
+            // Initialiser les totaux
+            calculerTotaux();
+        }
+        
+        // Initialisation des détails de location/achat
+        function initDetailsLocation() {
+            // Données des prix basées sur les tables fournies
+            const zonePrices = {
+                "Classe 1": 300,
+                "Classe 2": 500,
+                "Classe 3": 750,
+                "Classe 4": 1000
+            };
+            
+            const categoryPrices = {
+                "A": 1500,
+                "B": 500,
+                "C": 250,
+                "D": 100,
+                "E": 1750,
+                "F": 1000000
+            };
+            
+            const garagePrices = {
+                "0 place": 0,
+                "2 place": 200,
+                "4 place": 400,
+                "6 place": 750,
+                "12 place": 1200,
+                "24 place": 4000
+            };
+            
+            // Prix fixe du coffre pour la location
+            const rentalCoffrePrice = 100;
+            
+            // Prix fixe du coffre pour l'achat
+            const purchaseCoffrePrice = 30000;
+            
+            // Données des intérieurs avec leur catégorie et poids maximum
+            const interiorData = [
+                { name: "Appartement Low Cost", category: "D", maxWeight: 200 },
+                { name: "Appartement Mid Cost", category: "C", maxWeight: 300 },
+                { name: "Appartement Moderne 1", category: "B", maxWeight: 350 },
+                { name: "Appartement Moderne 2", category: "B", maxWeight: 350 },
+                { name: "Appartement Moderne 3", category: "B", maxWeight: 400 },
+                { name: "Appartement Moderne 4", category: "B", maxWeight: 400 },
+                { name: "Appartement Moderne 5", category: "B", maxWeight: 400 },
+                { name: "Appartement Moderne 6", category: "B", maxWeight: 400 },
+                { name: "Appartement Moderne 7", category: "B", maxWeight: 400 },
+                { name: "Appartement Moderne 8", category: "B", maxWeight: 400 },
+                { name: "Appartement Moderne 9", category: "B", maxWeight: 400 },
+                { name: "Appartement Moderne 10", category: "B", maxWeight: 400 },
+                { name: "Appartement Moderne 11", category: "B", maxWeight: 450 },
+                { name: "Appartement Moderne 12", category: "B", maxWeight: 450 },
+                { name: "Appartement Moderne 13", category: "B", maxWeight: 450 },
+                { name: "Appartement Moderne 14", category: "B", maxWeight: 450 },
+                { name: "Appartement Moderne 15", category: "B", maxWeight: 450 },
+                { name: "Appartement Moderne 16", category: "B", maxWeight: 450 },
+                { name: "Appartement Moderne 17", category: "B", maxWeight: 500 },
+                { name: "Appartement Moderne 18", category: "B", maxWeight: 500 },
+                { name: "Appartement Moderne 19", category: "B", maxWeight: 500 },
+                { name: "Bureau Moderne 1", category: "B", maxWeight: 750 },
+                { name: "Bureau Moderne 2", category: "B", maxWeight: 750 },
+                { name: "Bureau Moderne 3", category: "B", maxWeight: 750 },
+                { name: "Bureau Moderne 4", category: "B", maxWeight: 750 },
+                { name: "Bureau Moderne 5", category: "A", maxWeight: 900 },
+                { name: "Bureau Moderne 6", category: "A", maxWeight: 900 },
+                { name: "Bureau Moderne 7", category: "A", maxWeight: 900 },
+                { name: "Bureau Moderne 8", category: "A", maxWeight: 900 },
+                { name: "Bureau Moderne 1", category: "D", maxWeight: 300 },
+                { name: "Garage Club 1", category: "E", maxWeight: 450 },
+                { name: "Garage Club 2", category: "E", maxWeight: 450 },
+                { name: "Bunker 1", category: "F", maxWeight: 30000 },
+                { name: "Diamond Casino Penthouse", category: "E", maxWeight: 500 },
+                { name: "Petit Entrepôt", category: "C", maxWeight: 1000 },
+                { name: "Moyen Entrepôt", category: "D", maxWeight: 1750 },
+                { name: "Grand Entrepôt", category: "A", maxWeight: 3000 },
+                { name: "Container Shell", category: "E", maxWeight: 250 },
+                { name: "Furnished Mid Appart Shell", category: "C", maxWeight: 300 },
+                { name: "Modern Hotel Shell", category: "E", maxWeight: 150 },
+                { name: "Frank Aunt Shell", category: "E", maxWeight: 250 },
+                { name: "Garage Modern Shell", category: "E", maxWeight: 300 },
+                { name: "Lester Shell", category: "B", maxWeight: 250 },
+                { name: "Michael Shell", category: "E", maxWeight: 350 },
+                { name: "Office Shell", category: "E", maxWeight: 250 },
+                { name: "Ranch Shell", category: "E", maxWeight: 400 },
+                { name: "Store Shell", category: "E", maxWeight: 300 },
+                { name: "Caravane Shell", category: "E", maxWeight: 100 },
+                { name: "Trevor Shell", category: "E", maxWeight: 200 },
+                { name: "Shell 10 Low", category: "E", maxWeight: 200 },
+                { name: "Shell 10 Mid", category: "E", maxWeight: 300 },
+                { name: "Motel Shell", category: "E", maxWeight: 200 },
+                { name: "T1 Unfurnished Shell", category: "E", maxWeight: 200 },
+                { name: "T1 Furnished Shell", category: "E", maxWeight: 200 },
+                { name: "T2 Unfurnished Shell", category: "E", maxWeight: 275 },
+                { name: "T2 Furnished Shell", category: "E", maxWeight: 275 },
+                { name: "T3 Unfurnished Shell", category: "E", maxWeight: 350 },
+                { name: "T3 Furnished Shell", category: "E", maxWeight: 350 },
+                { name: "Shell 01 Empty", category: "E", maxWeight: 200 },
+                { name: "Shell 01 Furnished", category: "E", maxWeight: 200 },
+                { name: "Shell 02 Empty", category: "E", maxWeight: 275 },
+                { name: "Shell 02 Furnished", category: "E", maxWeight: 275 },
+                { name: "Shell 03 Empty", category: "E", maxWeight: 300 },
+                { name: "Shell 03 Furnished", category: "E", maxWeight: 300 },
+                { name: "Shell 04", category: "E", maxWeight: 500 },
+                { name: "Shell 04 Furnished", category: "E", maxWeight: 500 }
+            ];
+            
+            // Éléments DOM
+            const interiorTypeSelect = document.getElementById('interior-type');
+            const zoneSelect = document.getElementById('zone');
+            const garageSelect = document.getElementById('garage');
+            const locationTaxInput = document.getElementById('location-tax');
+            const purchaseTaxInput = document.getElementById('purchase-tax');
+            
+            // Éléments de résultats pour la location
+            const rentalBasePriceElement = document.getElementById('rental-base-price');
+            const rentalTaxAmountElement = document.getElementById('rental-tax-amount');
+            const finalRentalPriceElement = document.getElementById('final-rental-price');
+            
+            // Éléments de résultats pour l'achat
+            const purchaseCoffrePriceElement = document.getElementById('purchase-coffre-price');
+            const purchaseGaragePriceElement = document.getElementById('purchase-garage-price');
+            const purchaseZonePriceElement = document.getElementById('purchase-zone-price');
+            const purchaseCategoryPriceElement = document.getElementById('purchase-category-price');
+            const purchaseTaxAmountElement = document.getElementById('purchase-tax-amount');
+            const finalPurchasePriceElement = document.getElementById('final-purchase-price');
+            
+            const maxWeightElement = document.getElementById('max-weight');
+            const resetButton = document.getElementById('reset-btn');
+            
+            // Gestion des onglets
+            const tabs = document.querySelectorAll('.tab');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const tabId = tab.getAttribute('data-tab');
+                    
+                    // Désactiver tous les onglets et contenus
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tabContents.forEach(content => content.classList.remove('active'));
+                    
+                    // Activer l'onglet et le contenu sélectionnés
+                    tab.classList.add('active');
+                    document.getElementById(`${tabId}-tab`).classList.add('active');
+                });
+            });
+            
+            // Remplir la liste des types d'intérieur
+            function populateInteriorTypes() {
+                interiorData.forEach(interior => {
+                    const option = document.createElement('option');
+                    option.value = interior.name;
+                    option.textContent = interior.name;
+                    interiorTypeSelect.appendChild(option);
+                });
+            }
+            
+            // Fonction de calcul pour l'achat
+            function calculatePurchasePrice(garagePrice, zonePrice, categoryPrice) {
+                // Calcul du prix du garage pour l'achat
+                const garagePlacePrice = garagePrice * 300;
+                const purchaseGarageTotal = garagePlacePrice;
+                
+                // Calcul du prix de la zone pour l'achat
+                const zonePlacePrice = zonePrice * 300;
+                const purchaseZoneTotal = zonePlacePrice;
+                
+                // Calcul du prix de la catégorie pour l'achat
+                const categoryPlacePrice = categoryPrice * 300;
+                const purchaseCategoryTotal = categoryPlacePrice;
+                
+                return {
+                    garage: purchaseGarageTotal,
+                    zone: purchaseZoneTotal,
+                    category: purchaseCategoryTotal
+                };
+            }
+            
+            // Fonction de calcul principal
+            function calculatePrices() {
+                const interiorType = interiorTypeSelect.value;
+                const zone = zoneSelect.value;
+                const garage = garageSelect.value;
+                const locationTaxRate = parseInt(locationTaxInput.value) || 0;
+                const purchaseTaxRate = parseInt(purchaseTaxInput.value) || 0;
+                
+                // Vérification que les sélections obligatoires sont faites
+                if (!interiorType || !zone || !garage) {
+                    return;
+                }
+                
+                // Trouver les données de l'intérieur sélectionné
+                const selectedInterior = interiorData.find(item => item.name === interiorType);
+                if (!selectedInterior) {
+                    return;
+                }
+                
+                // Récupération des prix de base
+                const zonePrice = zonePrices[zone] || 0;
+                const categoryPrice = categoryPrices[selectedInterior.category] || 0;
+                const garagePrice = garagePrices[garage] || 0;
+                
+                // CALCULS POUR LA LOCATION
+                // Prix de base = zone + catégorie + garage + coffre
+                const rentalBasePrice = zonePrice + categoryPrice + garagePrice + rentalCoffrePrice;
+                
+                // Calcul des taxes pour la location
+                const rentalTaxAmount = rentalBasePrice * (locationTaxRate / 100);
+                
+                // Calcul du prix final pour la location
+                const finalRentalPrice = rentalBasePrice + rentalTaxAmount;
+                
+                // Mise à jour de l'affichage pour la location
+                rentalBasePriceElement.textContent = `$${rentalBasePrice.toFixed(0)}`;
+                rentalTaxAmountElement.textContent = `$${rentalTaxAmount.toFixed(0)}`;
+                finalRentalPriceElement.textContent = `$${finalRentalPrice.toFixed(0)}`;
+                
+                // CALCULS POUR L'ACHAT
+                // Calcul des composants du prix d'achat
+                const purchasePrices = calculatePurchasePrice(garagePrice, zonePrice, categoryPrice);
+                
+                // Prix de base pour l'achat = coffre + garage + zone + catégorie
+                const purchaseBasePrice = purchaseCoffrePrice + purchasePrices.garage + purchasePrices.zone + purchasePrices.category;
+                
+                // Calcul des taxes pour l'achat
+                const purchaseTaxAmount = purchaseBasePrice * (purchaseTaxRate / 100);
+                
+                // Calcul du prix final pour l'achat
+                const finalPurchasePrice = purchaseBasePrice + purchaseTaxAmount;
+                
+                // Mise à jour de l'affichage pour l'achat
+                purchaseCoffrePriceElement.textContent = `$${purchaseCoffrePrice.toFixed(0)}`;
+                purchaseGaragePriceElement.textContent = `$${purchasePrices.garage.toFixed(0)}`;
+                purchaseZonePriceElement.textContent = `$${purchasePrices.zone.toFixed(0)}`;
+                purchaseCategoryPriceElement.textContent = `$${purchasePrices.category.toFixed(0)}`;
+                purchaseTaxAmountElement.textContent = `$${purchaseTaxAmount.toFixed(0)}`;
+                finalPurchasePriceElement.textContent = `$${finalPurchasePrice.toFixed(0)}`;
+                
+                // Affichage du poids maximum du coffre
+                maxWeightElement.textContent = `${selectedInterior.maxWeight} kg`;
+            }
+            
+            // Fonction de réinitialisation
+            function resetForm() {
+                interiorTypeSelect.value = "";
+                zoneSelect.value = "";
+                garageSelect.value = "";
+                locationTaxInput.value = "0";
+                purchaseTaxInput.value = "0";
+                
+                // Réinitialiser l'affichage des résultats
+                rentalBasePriceElement.textContent = "$0";
+                rentalTaxAmountElement.textContent = "$0";
+                finalRentalPriceElement.textContent = "$0";
+                
+                purchaseCoffrePriceElement.textContent = "$0";
+                purchaseGaragePriceElement.textContent = "$0";
+                purchaseZonePriceElement.textContent = "$0";
+                purchaseCategoryPriceElement.textContent = "$0";
+                purchaseTaxAmountElement.textContent = "$0";
+                finalPurchasePriceElement.textContent = "$0";
+                
+                maxWeightElement.textContent = "0 kg";
+            }
+            
+            // Écouteurs d'événements pour le calcul automatique
+            interiorTypeSelect.addEventListener('change', calculatePrices);
+            zoneSelect.addEventListener('change', calculatePrices);
+            garageSelect.addEventListener('change', calculatePrices);
+            locationTaxInput.addEventListener('input', calculatePrices);
+            purchaseTaxInput.addEventListener('input', calculatePrices);
+            
+            resetButton.addEventListener('click', resetForm);
+            
+            // Initialisation
+            populateInteriorTypes();
+            resetForm();
+        }
+    </script>
+</body>
+</html>
