@@ -30,6 +30,7 @@
             color: #333;
             line-height: 1.6;
             min-height: 100vh;
+            padding: 20px;
         }
         
         /* Menu Hamburger */
@@ -172,7 +173,7 @@
             margin-bottom: 15px;
         }
         
-        /* Styles communs pour toutes les sections */
+        /* Sections */
         .section {
             display: none;
         }
@@ -185,6 +186,17 @@
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Styles pour la gestion des salaires */
+        .current-week-info {
+            background: linear-gradient(135deg, var(--warning), #e67e22);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: bold;
         }
         
         .tabs {
@@ -444,16 +456,6 @@
             flex: 1;
         }
         
-        .current-week-info {
-            background: linear-gradient(135deg, var(--warning), #e67e22);
-            color: white;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            text-align: center;
-            font-weight: bold;
-        }
-        
         .form-row {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr 1fr auto;
@@ -502,7 +504,7 @@
             font-size: 0.9rem;
         }
         
-        /* Styles spécifiques pour la grille des salaires */
+        /* Styles pour la grille des salaires */
         .salary-table {
             width: 100%;
             border-collapse: collapse;
@@ -1073,7 +1075,7 @@
             
             <!-- Section Gestion des Salaires -->
             <section id="gestion-salaire" class="section active">
-                <!-- Contenu de la gestion des salaires -->
+                <!-- Le code complet de la gestion des salaires est ici -->
                 <div class="current-week-info" id="currentWeekInfo">
                     <!-- Affiché dynamiquement -->
                 </div>
@@ -1433,9 +1435,7 @@
             
             <!-- Section Gestion des Baux Immobiliers -->
             <section id="gestion-baux" class="section">
-                <h2>Gestion des Baux Immobiliers</h2>
-                <p class="subtitle">Suivi complet des locations et ventes par employé</p>
-                
+                <!-- Le code complet de la gestion des baux est ici -->
                 <div class="dashboard">
                     <div class="card">
                         <h2><i class="fas fa-file-contract"></i> Saisie des Baux</h2>
@@ -1608,9 +1608,7 @@
             
             <!-- Section Détails Location et Achat -->
             <section id="details-location" class="section">
-                <h2>Détails de Location et Achat</h2>
-                <p class="subtitle">Configurez les paramètres et calculez les coûts automatiquement</p>
-                
+                <!-- Le code complet des détails de location et achat est ici -->
                 <div class="tabs-container">
                     <div class="tabs">
                         <button class="tab active" data-tab="main">Calculatrice</button>
